@@ -3,7 +3,8 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLString,
-  GraphQLID
+  GraphQLID,
+  GraphQLInt,
 } from 'graphql';
 
 export default new GraphQLObjectType({
@@ -12,17 +13,11 @@ export default new GraphQLObjectType({
     _id: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    username: {
+    name: {
       type: GraphQLString
     },
-    created_at:{
-      type:
-    }
     age: {
-      type:
-    },
-    biography: {
-      type: GraphQLString
+      type: GraphQLInt
     }
   }
 });

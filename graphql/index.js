@@ -3,13 +3,16 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLInt,
-  GraphQLString
+  GraphQLString,
+  GraphQLNonNull,
+  GraphQLID
 } from 'graphql';
 
-// import userModel from './types/users';
+import User from './types/users';
 
 // var mutations = require('./mutations');
 // var queries = require('./queries/SingleUserQuery');
+
 let count = 0;
 const Query = new GraphQLObjectType({
   name: 'Query',
@@ -27,11 +30,28 @@ const Query = new GraphQLObjectType({
       }
     },
     user: {
-      type: GraphQLString,
-      resolve: function({db,id}){
-         console.log("What is Queries first arg??");
-          console.log(id);
-        return db.one('SELECT * FROM users WHERE id = $1;', [id])
+      type: User,
+      args: {
+        id: {
+          type: new GraphQLNonNull(GraphQLInt)
+        }
+      },
+      resolve(arg1, arg2){
+         // console.log("resolve arg1 arg");
+         //  console.log(parent);
+         console.log("resolve arg2 arg");
+          console.log(arg1);
+         console.log("resolve thrd arg");
+          console.log(arg2);
+        let name;
+        let username = arg1.db.one('SELECT name FROM users WHERE id = $1;', [arg2.id])
+          .then(result => {
+            console.log(result)
+            return result
+          });
+           console.log(username);
+        return username;
+
       }
     }
   }

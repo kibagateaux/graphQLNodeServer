@@ -56,8 +56,14 @@ app.use('/graphql', graphqlHTTP(req => ({
   pretty: true
 })));
 
-var query = '{ user }';
-graphql(schema, query, { db, id: 3 }).then(result => {
+const userIDQuery = `{
+  user(id: 2){
+    name
+  }
+}`
+const basicUserQuery = `{ user(id: 2){ name } }`
+const query = `{ hello }`
+graphql(schema, basicUserQuery, { db }).then(result => {
 
   // Prints
   // {

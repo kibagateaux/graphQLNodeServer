@@ -1,9 +1,10 @@
-const {
+import {
+  graphql,
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLString,
   GraphQLID
-} = require('graphql');
+} from 'graphql';
 
 export default new GraphQLObjectType({
   name: 'User',
@@ -11,9 +12,12 @@ export default new GraphQLObjectType({
     _id: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    name: {
+    username: {
       type: GraphQLString
     },
+    created_at:{
+      type:
+    }
     age: {
       type:
     },

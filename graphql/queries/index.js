@@ -1,0 +1,1 @@
+const SingleUserQuery = require('./SingleUserQuery');

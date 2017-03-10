@@ -19,15 +19,17 @@
   //models with interests for shoot
 // "/users" directory with intro gifs.
   // like snapchat avatar. fun, creative
-import express from 'express';
-import graphqlHTTP from 'express-graphql';
-import override from 'method-override';
-import parser from 'body-parser';
+
+const express = require ('express');
+const graphqlHTTP = require ('express-graphql');
+const override = require ('method-override');
+const parser = require ('body-parser');
+const {  graphql } = require ('graphql');
 
 const pgp = require('pg-promise')();
-const db = pgp('postgres://00y@localhost:5432/Hogwarts');
+const db = pgp('postgres://00y@localhost:5432/portfolio_website');
 
-import schema from './graphql';
+const schema = require ('./graphql');
 
 const app = express();
 

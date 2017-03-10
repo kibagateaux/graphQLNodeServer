@@ -12,7 +12,7 @@ export default new GraphQLObjectType({
       type: new GraphQLNonNull(GraphQLID)
     },
     name: {
-      type: new GraphQLNonNull(GraphQLString)
+      type: GraphQLString
     },
     age: {
       type:

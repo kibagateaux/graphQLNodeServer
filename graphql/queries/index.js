@@ -1,1 +1,1 @@
-const SingleUserQuery = require('./SingleUserQuery');
+// const SingleUserQuery = require('./SingleUserQuery');

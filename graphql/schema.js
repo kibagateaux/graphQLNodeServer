@@ -1,14 +1,11 @@
 import {
   GraphQLObjectType,
   GraphQLSchema,
-  GraphQLInt,
+
 } from 'graphql';
-
-import userModel from './types/users';
-
 // var mutations = require('./mutations');
 // var queries = require('./queries/SingleUserQuery');
-let count = 0;
+
 const Query = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
@@ -21,7 +18,7 @@ const Query = new GraphQLObjectType({
   }
 });
 
-const schema = new GraphQLSchema({
+const Schema = new GraphQLSchema({
   query: Query
   // mutation: new GraphQLObjectType({
   //   name: 'Mutation',
@@ -30,3 +27,4 @@ const schema = new GraphQLSchema({
 });
 
 export default schema;
+

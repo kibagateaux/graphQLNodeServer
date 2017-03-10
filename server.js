@@ -28,8 +28,8 @@ import { graphql } from 'graphql';
 const pgp = require('pg-promise')();
 const db = pgp('postgres://00y@localhost:5432/portfolio_website');
 
-// const schema = require ('./graphql');
 import schema from './graphql'
+
 const app = express();
 
 const port = 8080;
@@ -55,4 +55,16 @@ app.use('/graphql', graphqlHTTP(req => ({
   schema,
   pretty: true
 })));
+
+var query = '{ user }';
+graphql(schema, query, { db, id: 3 }).then(result => {
+
+  // Prints
+  // {
+  //   data: { hello: "world" }
+  // }
+
+  console.log(result);
+
+});
 

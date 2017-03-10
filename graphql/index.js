@@ -12,18 +12,26 @@ import {
 // var queries = require('./queries/SingleUserQuery');
 let count = 0;
 const Query = new GraphQLObjectType({
-  name: 'RootQueryType',
+  name: 'Query',
   fields: {
     hello: {
       type: GraphQLString,
       resolve: function() {
-        return 'World';
+        return "world"
       }
     },
     count:{
       type: GraphQLInt,
       resolve: function(){
         return count;
+      }
+    },
+    user: {
+      type: GraphQLString,
+      resolve: function({db,id}){
+         console.log("What is Queries first arg??");
+          console.log(id);
+        return db.one('SELECT * FROM users WHERE id = $1;', [id])
       }
     }
   }
@@ -37,15 +45,5 @@ const schema = new GraphQLSchema({
   // })
 });
 
-var query = '{ count }';
 
-graphql(schema, query).then(result => {
-
-  // Prints
-  // {
-  //   data: { hello: "world" }
-  // }
-  console.log(result);
-
-});
 export default schema;

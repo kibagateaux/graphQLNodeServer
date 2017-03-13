@@ -42,7 +42,9 @@ app.listen(port, function(){
 
 app.use (override('_method'));
 app.use(parser.urlencoded({extended: false}));
-// app.use(parser.json());
+app.use(parser.json());
+
+//no cluewhat this does
 app.use(parser.text({ type: 'application/graphql' }));
 
 // app.engine('html',mustacheExpress());
@@ -61,9 +63,11 @@ const userIDQuery = `{
     name
   }
 }`
+
 const basicUserQuery = `{ user(id: 2){ name } }`
 const query = `{ hello }`
-graphql(schema, basicUserQuery, { db }).then(result => {
+const props = { db }
+graphql(schema, basicUserQuery, props ).then(result => {
 
   // Prints
   // {

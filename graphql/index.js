@@ -36,15 +36,12 @@ const Query = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLInt)
         }
       },
-      resolve(arg1, arg2){
-         // console.log("resolve arg1 arg");
-         //  console.log(parent);
-         console.log("resolve arg2 arg");
-          console.log(arg1);
-         console.log("resolve thrd arg");
-          console.log(arg2);
+      resolve(parent, args, props){
+        console.log(props);
+         console.log(parent);
+          console.log(args);
         let name;
-        let username = arg1.db.one('SELECT name FROM users WHERE id = $1;', [arg2.id])
+        return props.db.one('SELECT name FROM users WHERE id = $1;', [args.id])
           .then(result => {
             console.log(result)
             return result

@@ -67,20 +67,20 @@ app.set('views',__dirname+'/views');
 //   },
 // };
 
-const root = {
-  hello: () => "World",
-  user: ({name}) => {
-    return `Your name is ${name}`
-  },
-  login: ({email, password}) => {
-    return `You are logging in as ${email} with password ${password}`
-  }
-}
+// const root = {
+//   hello: () => "World",
+//   user: (args) => {
+//      console.log("Uou have queried users with args ", args);
+//     return `Your name is ${name}`
+//   },
+//   login: ({email, password}) => {
+//     return `You are logging in as ${email} with password ${password}`
+//   }
+// }
 
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
   schema,
-  rootValue: root,
   pretty: true
 })));
 
@@ -93,7 +93,7 @@ const basicUserQuery = `{ user(name: "Henry"){ name } }`;
 const query = `{ hello }`
 const props = { db }
 
-graphql(schema, query, props).then(result => {
+graphql(schema, basicUserQuery, props).then(result => {
 
   console.log("The results of your GraphQl query are  ");
   console.log(result);

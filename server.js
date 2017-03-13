@@ -52,28 +52,50 @@ app.use(parser.text({ type: 'application/graphql' }));
 app.set('view engine','html');
 app.set('views',__dirname+'/views');
 
+
+
+// The root provides a resolver function for each API endpoint
+// const root = {
+//   quoteOfTheDay: () => {
+//     return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
+//   },
+//   random: () => {
+//     return Math.random();
+//   },
+//   rollThreeDice: () => {
+//     return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6));
+//   },
+// };
+
+const root = {
+  hello: () => "World",
+  user: ({name}) => {
+    return `Your name is ${name}`
+  },
+  login: ({email, password}) => {
+    return `You are logging in as ${email} with password ${password}`
+  }
+}
+
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
   schema,
+  rootValue: root,
   pretty: true
 })));
 
 const userIDQuery = `{
-  user(id: 2){
-    name
-  }
-}`
+                      user(id: 2){
+                        name
+                      }}`;
+const basicUserQuery = `{ user(name: "Henry"){ name } }`;
 
-const basicUserQuery = `{ user(id: 2){ name } }`
 const query = `{ hello }`
 const props = { db }
-graphql(schema, basicUserQuery, props ).then(result => {
 
-  // Prints
-  // {
-  //   data: { hello: "world" }
-  // }
+graphql(schema, query, props).then(result => {
 
+  console.log("The results of your GraphQl query are  ");
   console.log(result);
 
 });

@@ -98,20 +98,19 @@ app.post("/register", function(req,res){
   let { email, password, socialMediaWithPermissions } = req.body
   let {  Instagram, Twitter, Youtube } = socialMediaWithPermissions;
    console.log("/register request", req.body);
-  }
   db.none(`INSERT INTO users(
                              email,
                              password,
                              instagram_username,
                              twitter_username,
                              youtube_username)
-                      VALUES ($1, $2, $3, $4, $5);`,
+                      VALUES ($1, $2, $3, $4, $5)`,
       [email, password, Instagram, Twitter, Youtube])
 });
 
 app.post("/login", function(req,res){
   let { email, password } = req.body;
-  db.one("SELECT * FROM user WHERE email = $1", [email])
+  db.one("SELECT * FROM users WHERE email = $1", [email])
     .then((user) => {
       bcryptCompare(password, user);
     })

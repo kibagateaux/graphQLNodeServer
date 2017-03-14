@@ -62,6 +62,12 @@ app.use(parser.text({ type: 'application/graphql' }));
 app.set('view engine','html');
 app.set('views',__dirname+'/views');
 
+app.use(session({
+  secret: 'ModelsAreTheScumOfTheEarth',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
 
 
 // The root provides a resolver function for each API endpoint
@@ -118,7 +124,7 @@ app.post("/fblogin", function(req,res){
         db.one(
           "UPDATE users SET facebook_token=$1 WHERE facebook_id=$2 RETURNING *",
           [accessToken, userID])
-          .then(user => req.session.user = user)
+          .then(updatedUser =>   req.session.user = updatedUser)
           .catch(err =>  console.log("/fblogin token update failed", err))
       }
     })

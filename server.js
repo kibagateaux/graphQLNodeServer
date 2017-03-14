@@ -31,6 +31,9 @@ import fetch from 'node-fetch';
 
 import { bcryptCompare } from './lib/auth/emailLoginAuth';
 
+import cors from 'cors'
+
+
 const pgp = require('pg-promise')();
 const db = pgp('postgres://00y@localhost:5432/portfolio_website');
 
@@ -45,6 +48,7 @@ app.listen(port, function(){
 });
 
 // app.use(express.static(__dirname+'/public'));
+app.use(cors({origin:true,credentials: true}));
 
 app.use (override('_method'));
 app.use(parser.urlencoded({extended: false}));
@@ -90,6 +94,20 @@ app.use('/graphql', graphqlHTTP(req => ({
   pretty: true
 })));
 
+app.post("/register", function(req,res){
+  let { email, password, socialMediaWithPermissions } = req.body
+  let {  Instagram, Twitter, Youtube } = socialMediaWithPermissions;
+   console.log("/register request", req.body);
+  }
+  db.none(`INSERT INTO users(
+                             email,
+                             password,
+                             instagram_username,
+                             twitter_username,
+                             youtube_username)
+                      VALUES ($1, $2, $3, $4, $5);`,
+      [email, password, Instagram, Twitter, Youtube])
+});
 
 app.post("/login", function(req,res){
   let { email, password } = req.body;
@@ -97,7 +115,7 @@ app.post("/login", function(req,res){
     .then((user) => {
       bcryptCompare(password, user);
     })
-})
+});
 
 const userIDQuery = `{
                       user(id: 2){

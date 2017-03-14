@@ -29,7 +29,7 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 import fetch from 'node-fetch';
 
-import { bcryptCompare } from './lib/auth/emailLoginAuth';
+import { bcryptCompare } from './lib/auth/bcryptAuth';
 
 import cors from 'cors'
 
@@ -44,7 +44,7 @@ const app = express();
 const port = 8080;
 
 app.listen(port, function(){
-  console.log("8080 vision");
+  console.log("port open on 8080");
 });
 
 // app.use(express.static(__dirname+'/public'));
@@ -65,18 +65,6 @@ app.set('views',__dirname+'/views');
 
 
 // The root provides a resolver function for each API endpoint
-// const root = {
-//   quoteOfTheDay: () => {
-//     return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
-//   },
-//   random: () => {
-//     return Math.random();
-//   },
-//   rollThreeDice: () => {
-//     return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6));
-//   },
-// };
-
 // const root = {
 //   hello: () => "World",
 //   user: (args) => {
@@ -117,6 +105,34 @@ app.post("/login", function(req,res){
     })
 });
 
+app.post("/fblogin", function(req,res){
+  let { userID, accessToken } = req.body;
+   console.log("/fblogin request", req);
+  let user = db.one(
+        "SELECT * FROM users WHERE facebook_id = $1",
+        [userID]
+      )
+    .then(user => {
+       console.log("logging in user with fb", user);
+      if(user){
+        db.one(
+          "INSERT INTO users(facebook_token) VALUES $1 WHERE facebook_id = $2",
+          [accessToken, userID])
+          .then(user => req.session.user = user)
+      }
+    })
+    .catch(err => {
+      if(err.message === "No data returned from the query."){
+        db.none(
+          "INSERT INTO users(facebook_token, facebook_id) VALUES ($1, $2)",
+          [accessToken, userID])
+        .then(user => req.session.user = user)
+      }
+        console.log("error with /fblogin", err)
+    })
+});
+
+
 const userIDQuery = `{
                       user(id: 2){
                         name
@@ -128,10 +144,10 @@ const emailLoginQuery = `{ login(email: "m@m.m", password: "m") }`
 const query = `{ hello }`
 const props = { db }
 
-graphql(schema, emailLoginQuery, db).then(result => {
+// graphql(schema, emailLoginQuery, db).then(result => {
 
-  console.log("The results of your GraphQl query are  ");
-  console.log(result);
+//   console.log("The results of your GraphQl query are  ");
+//   console.log(result);
 
-});
+// });
 

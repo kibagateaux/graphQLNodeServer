@@ -103,9 +103,10 @@ app.post("/register", function(req,res){
                              password,
                              instagram_username,
                              twitter_username,
-                             youtube_username)
-                      VALUES ($1, $2, $3, $4, $5)`,
-      [email, password, Instagram, Twitter, Youtube])
+                             youtube_username,
+                             social_media)
+                      VALUES ($1, $2, $3, $4, $5, $6)`,
+  [email, password, Instagram, Twitter, Youtube, Object.keys(socialMediaWithPermissions)])
 });
 
 app.post("/login", function(req,res){
@@ -119,7 +120,7 @@ app.post("/login", function(req,res){
 const userIDQuery = `{
                       user(id: 2){
                         name
-                      }}`;
+                        }}`;
 const basicUserQuery = `{ user(name: "Henry"){ name } }`;
 
 const emailLoginQuery = `{ login(email: "m@m.m", password: "m") }`

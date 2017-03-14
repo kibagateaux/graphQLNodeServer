@@ -91,6 +91,13 @@ app.use('/graphql', graphqlHTTP(req => ({
 })));
 
 
+app.post("/login", function(req,res){
+  let { email, password } = req.body;
+  db.one("SELECT * FROM user WHERE email = $1", [email])
+    .then((user) => {
+      bcryptCompare(password, user);
+    })
+})
 
 const userIDQuery = `{
                       user(id: 2){

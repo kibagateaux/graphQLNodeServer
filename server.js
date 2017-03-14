@@ -107,23 +107,24 @@ app.post("/login", function(req,res){
 
 app.post("/fblogin", function(req,res){
   let { userID, accessToken } = req.body;
-   console.log("/fblogin request", req);
+  console.log("/fblogin request", req);
   let user = db.one(
         "SELECT * FROM users WHERE facebook_id = $1",
         [userID]
       )
     .then(user => {
-       console.log("logging in user with fb", user);
+      console.log("logging in user with fb", user);
       if(user){
         db.one(
-          "INSERT INTO users(facebook_token) VALUES $1 WHERE facebook_id = $2",
+          "UPDATE users SET facebook_token=$1 WHERE facebook_id=$2 RETURNING *",
           [accessToken, userID])
           .then(user => req.session.user = user)
+          .catch(err =>  console.log("/fblogin token update failed", err))
       }
     })
     .catch(err => {
       if(err.message === "No data returned from the query."){
-        db.none(
+        db.one(
           "INSERT INTO users(facebook_token, facebook_id) VALUES ($1, $2)",
           [accessToken, userID])
         .then(user => req.session.user = user)

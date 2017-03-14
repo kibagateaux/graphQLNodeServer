@@ -25,6 +25,12 @@ import override from 'method-override';
 import parser from 'body-parser';
 import { graphql } from 'graphql';
 
+import session from 'express-session';
+import bcrypt from 'bcrypt';
+import fetch from 'node-fetch';
+
+import { bcryptCompare } from './lib/auth/emailLoginAuth';
+
 const pgp = require('pg-promise')();
 const db = pgp('postgres://00y@localhost:5432/portfolio_website');
 
@@ -84,16 +90,20 @@ app.use('/graphql', graphqlHTTP(req => ({
   pretty: true
 })));
 
+
+
 const userIDQuery = `{
                       user(id: 2){
                         name
                       }}`;
 const basicUserQuery = `{ user(name: "Henry"){ name } }`;
 
+const emailLoginQuery = `{ login(email: "m@m.m", password: "m") }`
+
 const query = `{ hello }`
 const props = { db }
 
-graphql(schema, basicUserQuery, props).then(result => {
+graphql(schema, emailLoginQuery, db).then(result => {
 
   console.log("The results of your GraphQl query are  ");
   console.log(result);

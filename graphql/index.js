@@ -7,7 +7,8 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLString,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLBoolean
 } from 'graphql';
 
 
@@ -26,9 +27,33 @@ const userType = new GraphQLObjectType({
   }),
 
 });
+// const auth =
+//loginType implments authType
+//should maybe only need args for a query not a whole Type See below
+// const loginType = new GraphQLObjectType({
+//   name: "loginType",
+//   description: "Receives login credentials and returns boolean value for login",
+//   fields: () => {
+//     email: {
+//       type: GraphQLString,
+//       // description: "Email submission for login"
+//     },
+//     username: {
+//       type: GraphQLString
+//     },
+//     password: {
+//       type: new GraphQLNonNull(GraphQLString),
+//       // description: "Password submission for login"
+//     }
+//   }
+// });
 
-var schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
+const regsiterType = new GraphQLObjectType({
+  name: "registerNewUser"
+
+});
+
+const queryType = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
       hello: {
@@ -50,13 +75,46 @@ var schema = new GraphQLSchema({
           }
         },
         resolve: (req, args, context) => {
-          console.log("User req args");
+          console.log("User req context");
+           console.log(context);
           return args
+        }
+      },
+      login: {
+        type: GraphQLBoolean,
+        args: {
+          email: {
+            type: GraphQLString,
+            // description: "Email submission for login"
+          },
+          username: {
+            type: GraphQLString,
+            // description: "Username submission for login"
+          },
+          password: {
+            type: new GraphQLNonNull(GraphQLString),
+            // description: "Password submission for login"
+          },
+        },
+        resolve: (arg1, arg2, context) => {
+           console.log("YOU HACE HIT THE LOGIN ROUGHT");
+           console.log("cont3ext is what?");
+            console.log(context.db);
+           console.log("arg1 is what?");
+            console.log(arg1);
+           console.log("should be params");
+            console.log(arg2);
+          return "YOU HAVE HIT THE LOGIN ROUGHT"
         }
       }
     }
 
   })
+
+
+
+var schema = new GraphQLSchema({
+  query: queryType
 });
 
 

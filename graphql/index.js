@@ -80,6 +80,8 @@ const queryType = new GraphQLObjectType({
           return args
         }
       },
+
+      // Vanilla login querys
       login: {
         type: GraphQLBoolean,
         args: {
@@ -99,17 +101,39 @@ const queryType = new GraphQLObjectType({
         resolve: (arg1, arg2, context) => {
            console.log("YOU HACE HIT THE LOGIN ROUGHT");
            console.log("cont3ext is what?");
-            console.log(context.db);
+            console.log(context);
            console.log("arg1 is what?");
             console.log(arg1);
            console.log("should be params");
             console.log(arg2);
           return "YOU HAVE HIT THE LOGIN ROUGHT"
         }
+      },
+
+      //OAuth login registered to database
+      facebookLogin: {
+        type: GraphQLBoolean,
+        args: {
+          facebook_id: {
+            type: new GraphQLNonNull(GraphQLString),
+            // description: "facebookID returned by facebook OAuth"
+          },
+          facebook_token: {
+            type: new GraphQLNonNull(GraphQLString),
+           // description: "facebookToken returned by facebook OAuth"
+          }
+        },
+        resolve: (parent, {facebook_id, facebook_token}, context) => {
+          if(facebook_id && facebook_token){
+            return true
+          }
+          return false
+        }
+
       }
     }
-
-  })
+  }
+})
 
 
 

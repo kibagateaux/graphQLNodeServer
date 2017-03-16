@@ -77,6 +77,19 @@ const queryType = new GraphQLObjectType({
         resolve: (req, args, context) => {
           console.log("User req context");
            console.log(context);
+         // where User is a db schema
+         // MongoDB example
+          //var UserSchema = new mongoose.Schema({
+              //   name: {
+              //     type: String
+              //   },
+              //   friends: [{
+              //     type: mongoose.Schema.Types.ObjectId,
+              //     ref: 'User'
+              //   }]
+              // });
+         // return User.findById(id, projections);
+         // var User = mongoose.model('User', UserSchema);
           return args
         }
       },
@@ -129,11 +142,9 @@ const queryType = new GraphQLObjectType({
           }
           return false
         }
-
       }
     }
-  }
-})
+  })
 
 
 

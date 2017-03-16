@@ -14,7 +14,6 @@
   // tab = "Model Portfolio"
 // "/:username/"
 
-
 // "/interests/:interest/:interest" gets
   //models with interests for shoot
 // "/users" directory with intro gifs.

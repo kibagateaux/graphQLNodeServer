@@ -70,20 +70,23 @@ app.use(session({
 
 
 // The root provides a resolver function for each API endpoint
-// const root = {
-//   hello: () => "World",
-//   user: (args) => {
-//      console.log("Uou have queried users with args ", args);
-//     return `Your name is ${name}`
-//   },
-//   login: ({email, password}) => {
-//     return `You are logging in as ${email} with password ${password}`
-//   }
-// }
+const root = {
+  db,
+  hello: () => "World",
+  user: (args) => {
+     console.log("Uou have queried users with args ", args);
+    return `Your name is ${name}`
+  },
+  emailLogin: ({email, password}) => {
+     console.log(`You are logging in as ${email} with password ${password}`);
+  }
+}
 
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
   schema,
+  graphiql: true,
+  rootValue: root,
   pretty: true
 })));
 
@@ -144,15 +147,15 @@ const userIDQuery = `{
                         }}`;
 const basicUserQuery = `{ user(name: "Henry"){ name } }`;
 
-const emailLoginQuery = `{ login(email: "m@m.m", password: "m") }`
+const emailLoginQuery = `{emailLogin(email: "m@m.m", password: "m")}`;
 
-const query = `{ hello }`
-const props = { db }
+const query = `{ hello }`;
+const props = { db };
 
-// graphql(schema, emailLoginQuery, db).then(result => {
+graphql(schema, emailLoginQuery, db).then(result => {
 
-//   console.log("The results of your GraphQl query are  ");
-//   console.log(result);
+  console.log("The results of your GraphQl query are  ");
+  console.log(result);
 
-// });
+});
 

@@ -95,7 +95,7 @@ const queryType = new GraphQLObjectType({
       },
 
       // Vanilla login querys
-      login: {
+      emailLogin: {
         type: GraphQLBoolean,
         args: {
           email: {
@@ -112,14 +112,14 @@ const queryType = new GraphQLObjectType({
           },
         },
         resolve: (arg1, arg2, context) => {
-           console.log("YOU HACE HIT THE LOGIN ROUGHT");
-           console.log("cont3ext is what?");
+           console.log("YOU HAVE HIT THE LOGIN ROUGHT");
+           console.log("context is what?");
             console.log(context);
            console.log("arg1 is what?");
             console.log(arg1);
            console.log("should be params");
             console.log(arg2);
-          return "YOU HAVE HIT THE LOGIN ROUGHT"
+          return arg1
         }
       },
 

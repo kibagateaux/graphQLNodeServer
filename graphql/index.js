@@ -10,34 +10,44 @@ import {
   GraphQLInt,
   GraphQLString,
   GraphQLNonNull,
+  GraphQLList,
   GraphQLBoolean,
 } from 'graphql';
 
+//deprecated user type
+// const userType = new GraphQLObjectType({
+//   name: 'User',
+//   description: 'A user of the app',
+//   fields: () => ({
+//     id: {
+//       type: new GraphQLNonNull(GraphQLString),
+//       description: 'The id of the user.',
+//     },
+//     name: {
+//       type: new GraphQLNonNull(GraphQLString),
+//       description: 'The name of the user.',
+//     }
+//   }),
 
-const userType = new GraphQLObjectType({
-  name: 'User',
-  description: 'A user of the app',
-  fields: () => ({
-    id: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The id of the user.',
-    },
-    name: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The name of the user.',
-    }
-  }),
+// });
 
-});
+
+const resolveType = (data) => {
+  if (data.username) {
+    return UserType;
+  }
+};
 
 const UserType = new GraphQLInterfaceType({
   name: 'UserType',
   description: "Interface for all users",
   fields: {
+    id: { type: new GraphQLNonNull(GraphQLString)},
     name: { type: new GraphQLNonNull(GraphQLString) },
+    username: { type: new GraphQLNonNull(GraphQLString) },
     age: { type: GraphQLInt },
   },
-  // resolveType: resolveType
+  resolveType: resolveType
 });
 
 const InfluencerType = new GraphQLObjectType({
@@ -47,18 +57,39 @@ const InfluencerType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString)},
     name: { type: new GraphQLNonNull(GraphQLString) },
+    username: { type: new GraphQLNonNull(GraphQLString) },
     age: { type: GraphQLInt },
+    interests: { type: new GraphQLList( GraphQLString )},
     twitterUsername: { type: GraphQLString },
     instagramUsername: { type: GraphQLString },
     youtubeUsername: { type: GraphQLString },
-  },
-  resolve: (root, args) => {
-    return;
+  }
+});
+
+const ViewerType = new GraphQLObjectType({
+  name: "ViewerType",
+  description: "Current user viewing application on client",
+  interfaces: [ UserType ],
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString)},
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    username: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: (root, args) => {
+        console.log("ViewerType username resolve function");
+        console.log(args);
+        return root.db.one(
+          "SELECT * FROM users WHERE username = $1", [args.username]
+        ).then(result => result);
+      }
+    },
+    age: { type: GraphQLInt }
   }
 })
 
 const queryType = new GraphQLObjectType({
     name: 'RootQueryType',
+    type: [ UserType ],
     fields: {
       hello: {
         type: GraphQLString,
@@ -66,8 +97,17 @@ const queryType = new GraphQLObjectType({
           return 'world';
         }
       },
+      viewer: {
+        type: ViewerType,
+        resolve: (root, args) => {
+          return root.db.one(
+            "SELECT * FROM users WHERE id = $id",
+            {$id: args.id}
+          ).then(result => result)
+        }
+      },
       user: {
-        type: userType,
+        type: UserType,
         args: {
           name: {
             description: "Name of the user",

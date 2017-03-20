@@ -5,10 +5,12 @@ import {
 import {
   graphql,
   GraphQLSchema,
+  GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLInt,
   GraphQLString,
   GraphQLNonNull,
-  GraphQLBoolean
+  GraphQLBoolean,
 } from 'graphql';
 
 
@@ -27,31 +29,33 @@ const userType = new GraphQLObjectType({
   }),
 
 });
-// const auth =
-//loginType implments authType
-//should maybe only need args for a query not a whole Type See below
-// const loginType = new GraphQLObjectType({
-//   name: "loginType",
-//   description: "Receives login credentials and returns boolean value for login",
-//   fields: () => {
-//     email: {
-//       type: GraphQLString,
-//       // description: "Email submission for login"
-//     },
-//     username: {
-//       type: GraphQLString
-//     },
-//     password: {
-//       type: new GraphQLNonNull(GraphQLString),
-//       // description: "Password submission for login"
-//     }
-//   }
-// });
 
-const regsiterType = new GraphQLObjectType({
-  name: "registerNewUser"
-
+const UserType = new GraphQLInterfaceType({
+  name: 'UserType',
+  description: "Interface for all users",
+  fields: {
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    age: { type: GraphQLInt },
+  },
+  // resolveType: resolveType
 });
+
+const InfluencerType = new GraphQLObjectType({
+  name: "InfluencerType",
+  description: "Influencer's with content",
+  interfaces: [ UserType ],
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString)},
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    age: { type: GraphQLInt },
+    twitterUsername: { type: GraphQLString },
+    instagramUsername: { type: GraphQLString },
+    youtubeUsername: { type: GraphQLString },
+  },
+  resolve: (root, args) => {
+    return;
+  }
+})
 
 const queryType = new GraphQLObjectType({
     name: 'RootQueryType',
@@ -111,14 +115,7 @@ const queryType = new GraphQLObjectType({
             // description: "Password submission for login"
           },
         },
-        resolve: ({emailLogin}, arg2, context) => {
-           console.log("YOU HAVE HIT THE LOGIN ROUGHT");
-           console.log("context is what?");
-            console.log(context);
-           console.log("should be params");
-            console.log(arg2);
-          return emailLogin
-        }
+        resolve: ({emailLogin}, arg2, context) => emailLogin
       },
 
       //OAuth login registered to database

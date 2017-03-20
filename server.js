@@ -101,6 +101,10 @@ app.post("/fblogin", function(req,res){
 
 
 // The root provides a resolver function for each API endpoint
+// resolve is a key part of hooking the schema and types up
+  // with an actual data storage and defines which data the
+  //field will return.
+
 const root = {
   db,
   hello: () => "World",
@@ -134,7 +138,7 @@ const emailLoginQuery = `{emailLogin(email: "m@m.m", password: "m")}`;
 const query = `{ hello }`;
 const props = { db };
 
-graphql(schema, emailLoginQuery, db).then(result => {
+graphql(schema, emailLoginQuery, props).then(result => {
 
   console.log("The results of your GraphQl query are  ");
   console.log(result);

@@ -1,23 +1,3 @@
-// "/" classic advertising landing page for platform,
-// "/:username" is my full profile
-  //tab="About Me"
-// "/:username/:social-media"
-  //tab="Socail Media"
-// "/:username/me" dedicated to showcasing passion projects
-  //tab="Hobbies"
-// "/:username/live" stream current or past live broadcasts
-  // tab = "????" maybe independent broadcast button for high traffic
-// "/:username/adventure" unleash the wild
-  // everyone travels, tell why I like traveling, my experiences
-  // tab = "Malik's Adventures"
-// "/:username/:agency" modeling portfolio
-  // tab = "Model Portfolio"
-// "/:username/"
-
-// "/interests/:interest/:interest" gets
-  //models with interests for shoot
-// "/users" directory with intro gifs.
-  // like snapchat avatar. fun, creative
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import override from 'method-override';
@@ -47,6 +27,8 @@ app.listen(port, function(){
 });
 
 // app.use(express.static(__dirname+'/public'));
+
+// allows cors requests
 app.use(cors({origin:true,credentials: true}));
 
 app.use (override('_method'));
@@ -55,8 +37,6 @@ app.use(parser.json());
 
 //no cluewhat this does
 app.use(parser.text({ type: 'application/graphql' }));
-
-// app.engine('html',mustacheExpress());
 
 app.set('view engine','html');
 app.set('views',__dirname+'/views');
@@ -67,28 +47,6 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
-
-
-// The root provides a resolver function for each API endpoint
-const root = {
-  db,
-  hello: () => "World",
-  user: (args) => {
-     console.log("Uou have queried users with args ", args);
-    return `Your name is ${name}`
-  },
-  emailLogin: ({email, password}) => {
-     console.log(`You are logging in as ${email} with password ${password}`);
-  }
-}
-
-// GraphqQL server route
-app.use('/graphql', graphqlHTTP(req => ({
-  schema,
-  graphiql: true,
-  rootValue: root,
-  pretty: true
-})));
 
 app.post("/register", function(req,res){
   let { email, password, socialMediaWithPermissions } = req.body
@@ -139,6 +97,30 @@ app.post("/fblogin", function(req,res){
         console.log("error with /fblogin", err)
     })
 });
+
+
+
+// The root provides a resolver function for each API endpoint
+const root = {
+  db,
+  hello: () => "World",
+  user: (args) => {
+     console.log("Uou have queried users with args ", args);
+    return `Your name is ${name}`
+  },
+  emailLogin: ({email, password}) => {
+    return db.one("SELECT * FROM users WHERE email = $1 AND password = $2",
+      [email, password]).then(user => user)
+  }
+}
+
+// GraphqQL server route
+app.use('/graphql', graphqlHTTP(req => ({
+  schema,
+  graphiql: true,
+  rootValue: root,
+  pretty: true
+})));
 
 
 const userIDQuery = `{

@@ -111,15 +111,13 @@ const queryType = new GraphQLObjectType({
             // description: "Password submission for login"
           },
         },
-        resolve: (arg1, arg2, context) => {
+        resolve: ({emailLogin}, arg2, context) => {
            console.log("YOU HAVE HIT THE LOGIN ROUGHT");
            console.log("context is what?");
             console.log(context);
-           console.log("arg1 is what?");
-            console.log(arg1);
            console.log("should be params");
             console.log(arg2);
-          return arg1
+          return emailLogin
         }
       },
 

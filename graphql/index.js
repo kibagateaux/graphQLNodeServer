@@ -14,23 +14,6 @@ import {
   GraphQLBoolean,
 } from 'graphql';
 
-//deprecated user type
-// const userType = new GraphQLObjectType({
-//   name: 'User',
-//   description: 'A user of the app',
-//   fields: () => ({
-//     id: {
-//       type: new GraphQLNonNull(GraphQLString),
-//       description: 'The id of the user.',
-//     },
-//     name: {
-//       type: new GraphQLNonNull(GraphQLString),
-//       description: 'The name of the user.',
-//     }
-//   }),
-
-// });
-
 
 const resolveType = (data) => {
   if (data.username) {
@@ -119,63 +102,7 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: (req, args, context) => {
-          console.log("User req context");
-           console.log(context);
-         // where User is a db schema
-         // MongoDB example
-          //var UserSchema = new mongoose.Schema({
-              //   name: {
-              //     type: String
-              //   },
-              //   friends: [{
-              //     type: mongoose.Schema.Types.ObjectId,
-              //     ref: 'User'
-              //   }]
-              // });
-         // return User.findById(id, projections);
-         // var User = mongoose.model('User', UserSchema);
           return args
-        }
-      },
-
-      // Vanilla login querys
-      emailLogin: {
-        type: GraphQLBoolean,
-        args: {
-          email: {
-            type: GraphQLString,
-            // description: "Email submission for login"
-          },
-          username: {
-            type: GraphQLString,
-            // description: "Username submission for login"
-          },
-          password: {
-            type: new GraphQLNonNull(GraphQLString),
-            // description: "Password submission for login"
-          },
-        },
-        resolve: ({emailLogin}, arg2, context) => emailLogin
-      },
-
-      //OAuth login registered to database
-      facebookLogin: {
-        type: GraphQLBoolean,
-        args: {
-          facebook_id: {
-            type: new GraphQLNonNull(GraphQLString),
-            // description: "facebookID returned by facebook OAuth"
-          },
-          facebook_token: {
-            type: new GraphQLNonNull(GraphQLString),
-           // description: "facebookToken returned by facebook OAuth"
-          }
-        },
-        resolve: (parent, {facebook_id, facebook_token}, context) => {
-          if(facebook_id && facebook_token){
-            return true
-          }
-          return false
         }
       }
     }

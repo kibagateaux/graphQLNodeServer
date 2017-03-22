@@ -16,18 +16,43 @@ import {
 
 
 const resolveType = (data) => {
-  if (data.username) {
-    return UserType;
+  if (data.instagramUsername) {
+    return InfluencerType;
+  }
+  if(data.username){
+    return ViewerType;
   }
 };
+
+const VideoType = new GraphQLObjectType({
+  name: "VideoType",
+  description: "Videos for user viewing",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString)},
+    author: {
+      type: InfluencerType,
+      resolve: (parent, args) => {
+       return parent.db.any(
+          "SELECT * FROM useres WHERE id = $1", [parent.id]
+        ).then(result => result)
+      }
+    }
+
+  },
+  resolve: ({db}, args) => {
+    return db.any(
+      "SELECT * FROM videos WHERE id = $1", [args.id]
+    ).then(result => result)
+  }
+});
 
 const UserType = new GraphQLInterfaceType({
   name: 'UserType',
   description: "Interface for all users",
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString)},
-    name: { type: new GraphQLNonNull(GraphQLString) },
-    username: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: GraphQLString },
+    username: { type: GraphQLString },
     age: { type: GraphQLInt },
   },
   resolveType: resolveType
@@ -38,14 +63,21 @@ const InfluencerType = new GraphQLObjectType({
   description: "Influencer's with content",
   interfaces: [ UserType ],
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString)},
-    name: { type: new GraphQLNonNull(GraphQLString) },
-    username: { type: new GraphQLNonNull(GraphQLString) },
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: GraphQLString },
+    username: { type: GraphQLString },
     age: { type: GraphQLInt },
     interests: { type: new GraphQLList( GraphQLString )},
     twitterUsername: { type: GraphQLString },
     instagramUsername: { type: GraphQLString },
     youtubeUsername: { type: GraphQLString },
+    // videos: {
+    //   type: new GraphQLList(VideoType),
+    //   resolve: (parent, args) => {
+    //     return parent.db.any(
+    //       "SELECT * FROM VIDEOS WHERE author = $1", [args.id]
+    //     ).then(result => result)
+    //   }}
   }
 });
 
@@ -89,24 +121,44 @@ const queryType = new GraphQLObjectType({
           ).then(result => result)
         }
       },
+      influencer: {
+        type: InfluencerType,
+        args: {
+          id: {
+            description: "Variable to search user in database",
+            type: new GraphQLNonNull(GraphQLString)
+          }
+        },
+        resolve: ({db}, {id}) =>{
+           console.log("influencer resolve id");
+            console.log(id);
+          return db.one(
+            "SELECT * FROM users where id = $1", [id]
+            ).then(result => {
+               console.log("resolve result", result);
+              return result
+            })
+        }
+      },
       user: {
         type: UserType,
         args: {
           name: {
-            description: "Name of the user",
-            type: new GraphQLNonNull(GraphQLString)
+            description: "user's full name",
+            type: GraphQLString
           },
           id: {
-            description: "Unique user id",
-            type: GraphQLString
+            description: "Variable to search user in database",
+            type: new GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: (req, args, context) => {
-          return args
-        }
-      }
+        resolve: (root, args, context) => root.db.any(
+          //make name dynamic so can select by username, name, or email
+          "SELECT * FROM users WHERE username = $1", [args.id]
+        ).then(result => result)
     }
-  })
+  }
+})
 
 
 

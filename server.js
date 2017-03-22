@@ -10,7 +10,7 @@ import fetch from 'node-fetch';
 
 import { bcryptCompare } from './lib/auth/bcryptAuth';
 
-import cors from 'cors'
+import cors from 'cors';
 
 
 const pgp = require('pg-promise')();
@@ -105,18 +105,7 @@ app.post("/fblogin", function(req,res){
   // with an actual data storage and defines which data the
   //field will return.
 
-const root = {
-  db,
-  hello: () => "World",
-  user: (args) => {
-     console.log("Uou have queried users with args ", args);
-    return `Your name is ${name}`
-  },
-  emailLogin: ({email, password}) => {
-    return db.one("SELECT * FROM users WHERE email = $1 AND password = $2",
-      [email, password]).then(user => user)
-  }
-}
+const root = { db };
 
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
@@ -127,18 +116,13 @@ app.use('/graphql', graphqlHTTP(req => ({
 })));
 
 
-const userIDQuery = `{
-                      user(id: 2){
-                        name
-                        }}`;
-const basicUserQuery = `{ user(name: "Henry"){ name } }`;
+const userIDQuery = `{user(id: 2){name}}`;
+const basicUserQuery = `{ user(id:"Estrid"){ username } }`;
 
-const emailLoginQuery = `{emailLogin(email: "m@m.m", password: "m")}`;
 
-const query = `{ hello }`;
-const props = { db };
+const query = `{hello}`;
 
-graphql(schema, emailLoginQuery, props).then(result => {
+graphql(schema, basicUserQuery).then(result => {
 
   console.log("The results of your GraphQl query are  ");
   console.log(result);

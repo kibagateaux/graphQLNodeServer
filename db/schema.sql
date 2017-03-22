@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS videos;
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users
@@ -15,3 +17,8 @@ CREATE TABLE users
   youtube_username VARCHAR(255)
 );
 
+CREATE TABLE videos
+(
+  id SERIAL PRIMARY KEY,
+  author INTEGER REFERENCES users
+);

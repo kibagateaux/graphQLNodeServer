@@ -105,21 +105,17 @@ app.post("/fblogin", function(req,res){
   // with an actual data storage and defines which data the
   //field will return.
 
-const context = { db };
 
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
   schema,
   graphiql: true,
-  rootValue: context,
   pretty: true
 })));
 
 
-const userIDQuery = `{users(id: 2){name}}`;
-const basicUserQuery = `{ users(firstName:"Estrid"){ username } }`;
-
-
+const userIDQuery = `{user(id: 2){name}}`;
+const basicUserQuery = `{ users(id:2){ username } }`;
 const query = `{hello}`;
 
 //if you add rootValue as third then get Abstract UserType as undefined

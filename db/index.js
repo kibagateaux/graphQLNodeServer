@@ -13,11 +13,7 @@ const Connection = new Sequelize(
 );
 
 const User = Connection.define('user', {
-  firstName: {
-    type: Sequelize.STRING,
-    allowNull: true
-  },
-  lastName: {
+  name: {
     type: Sequelize.STRING,
     allowNull: true
   },
@@ -66,7 +62,7 @@ Video.belongsTo(User);
 Connection.sync({ force: true }).then(()=> {
   _.times(10, ()=> {
     return User.create({
-      username: Faker.name.firstName(),
+      username: Faker.name.firstName() + Faker.name.lastName(),
       isInfluencer: false,
       email: Faker.internet.email()
     }).then(user => {

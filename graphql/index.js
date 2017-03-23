@@ -17,6 +17,8 @@ import {
 import db from '../db';
 
 const resolveType = (data) => {
+   console.log("resolveType");
+   console.log(data)
   if(data.instagramUsername) {
     return InfluencerType;
   }
@@ -50,7 +52,7 @@ const UserType = new GraphQLInterfaceType({
   name: 'UserType',
   description: "Interface for all users",
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString)},
+    id: { type: new GraphQLNonNull(GraphQLInt)},
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -64,7 +66,7 @@ const InfluencerType = new GraphQLObjectType({
   interfaces: [ UserType ],
   fields: {
     id: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(GraphQLInt),
       resolve: (influ) => influ.id
     },
     name: { type: GraphQLString },
@@ -97,7 +99,7 @@ const ViewerType = new GraphQLObjectType({
   description: "Current user viewing application on client",
   interfaces: [ UserType ],
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString)},
+    id: { type: new GraphQLNonNull(GraphQLInt)},
     name: { type: new GraphQLNonNull(GraphQLString) },
     username: {
       type: new GraphQLNonNull(GraphQLString),
@@ -132,6 +134,18 @@ const queryType = new GraphQLObjectType({
           ).then(result => result)
         }
       },
+      influencers: {
+        type: InfluencerType,
+        args: {
+          id: {
+            description: "Variable to search user in database",
+            type: new GraphQLNonNull(GraphQLInt)
+          }
+        },
+        resolve: (parent, args, context) =>{
+          return db.models.user.finAll({ where: { args, isInfluencer: true } })
+        }
+      },
       videos: {
         type: VideoType,
         args: {
@@ -155,7 +169,7 @@ const queryType = new GraphQLObjectType({
           },
           id: {
             description: "Variable to search user in database",
-            type: new GraphQLNonNull(GraphQLString)
+            type: new GraphQLNonNull(GraphQLInt)
           }
         },
         resolve: (root, args, context) => {

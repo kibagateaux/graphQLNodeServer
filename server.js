@@ -105,13 +105,13 @@ app.post("/fblogin", function(req,res){
   // with an actual data storage and defines which data the
   //field will return.
 
-const root = { db };
+const context = { db };
 
 // GraphqQL server route
 app.use('/graphql', graphqlHTTP(req => ({
   schema,
   graphiql: true,
-  rootValue: root,
+  rootValue: context,
   pretty: true
 })));
 
@@ -122,6 +122,7 @@ const basicUserQuery = `{ user(id:"Estrid"){ username } }`;
 
 const query = `{hello}`;
 
+//if you add rootValue as third then get Abstract UserType as undefined
 graphql(schema, basicUserQuery).then(result => {
 
   console.log("The results of your GraphQl query are  ");
@@ -129,3 +130,4 @@ graphql(schema, basicUserQuery).then(result => {
 
 });
 
+export { db }

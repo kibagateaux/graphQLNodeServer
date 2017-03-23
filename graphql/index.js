@@ -14,9 +14,10 @@ import {
   GraphQLBoolean,
 } from 'graphql';
 
+import { db } from '../server';
 
 const resolveType = (data) => {
-  if (data.instagramUsername) {
+  if(data.instagramUsername) {
     return InfluencerType;
   }
   if(data.username){
@@ -30,11 +31,20 @@ const VideoType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString)},
     author: {
-      type: InfluencerType,
+      //needs to be type Influencer but impossible if defined in same file
+      type: new GraphQLList(GraphQLInt),
       resolve: (parent, args) => {
-       return parent.db.any(
-          "SELECT * FROM useres WHERE id = $1", [parent.id]
-        ).then(result => result)
+         console.log("VideoType resolve");
+          console.log(parent.id);
+           console.log("___________________________");
+           console.log(args);
+       return db.any(
+          "SELECT * FROM users WHERE id = $1", [parent.author]
+        ).then(result => {
+          console.log("VideoType resolve result");
+          console.log(result)
+          return result.map(x => x.id)
+        })
       }
     }
 
@@ -71,15 +81,23 @@ const InfluencerType = new GraphQLObjectType({
     twitterUsername: { type: GraphQLString },
     instagramUsername: { type: GraphQLString },
     youtubeUsername: { type: GraphQLString },
-    // videos: {
-    //   type: new GraphQLList(VideoType),
-    //   resolve: (parent, args) => {
-    //     return parent.db.any(
-    //       "SELECT * FROM VIDEOS WHERE author = $1", [args.id]
-    //     ).then(result => result)
-    //   }}
+    videos: {
+      type: new GraphQLList(VideoType),
+      resolve: (parent, args, context) => {
+          console.log("InfluencerType Videos resolve parent");
+          console.log(parent);
+        return db.any(
+          "SELECT * FROM VIDEOS WHERE author = $1", [parent.id]
+        ).then(result => {
+          console.log("InfluencerType Videos result");
+           console.log(result);
+          return result
+        })
+      }}
   }
 });
+
+
 
 const ViewerType = new GraphQLObjectType({
   name: "ViewerType",
@@ -129,15 +147,29 @@ const queryType = new GraphQLObjectType({
             type: new GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: ({db}, {id}) =>{
-           console.log("influencer resolve id");
-            console.log(id);
+        resolve: ({db}, {id}, context) =>{
           return db.one(
             "SELECT * FROM users where id = $1", [id]
             ).then(result => {
-               console.log("resolve result", result);
+               console.log("Influencer Query resolve result", result);
               return result
             })
+        }
+      },
+      videos: {
+        type: VideoType,
+        args: {
+          id: {
+            type: new GraphQLNonNull(GraphQLString),
+            description: "ID of the video's author"
+          }
+        },
+        resolve: (parent, args) => {
+           console.log("Video Query resolve parent");
+            console.log(parent);
+          return parent.db.any(
+            "SELECT * FROM users WHERE id = $1", [args.author]
+          ).then(result => result)
         }
       },
       user: {

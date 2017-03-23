@@ -17,13 +17,14 @@ import {
 import db from '../db';
 
 const resolveType = (data) => {
+  let blah = data[0].dataValues;
    console.log("resolveType");
-   console.log(data)
-  if(data.instagramUsername) {
+   console.log(blah)
+  if(blah.instagramUsername) {
     return InfluencerType;
   }
-  if(data.username){
-    return ViewerType;
+  if(blah.username){
+    return InfluencerType;
   }
 };
 
@@ -39,8 +40,12 @@ const VideoType = new GraphQLObjectType({
       //needs to be type Influencer but impossible if defined in same file
       type: new GraphQLList(GraphQLInt),
       resolve: (video) => video.getInfluencer()
-      }
     },
+    title: {
+      type: GraphQLString,
+      resolve: video => video.title
+    }
+  },
   resolve: ({db}, args) => {
     return db.any(
       "SELECT * FROM videos WHERE id = $1", [args.id]
@@ -78,17 +83,8 @@ const InfluencerType = new GraphQLObjectType({
     youtubeUsername: { type: GraphQLString },
     videos: {
       type: new GraphQLList(VideoType),
-      resolve: (influ) => {
-          console.log("InfluencerType Videos resolve parent");
-          console.log(influ);
-        return db.any(
-          "SELECT * FROM VIDEOS WHERE author = $1", [influ.id]
-        ).then(result => {
-          console.log("InfluencerType Videos result");
-           console.log(result);
-          return result
-        })
-      }}
+      resolve: (influ) => db.models.user.getVideos()
+    }
   }
 });
 
@@ -103,14 +99,8 @@ const ViewerType = new GraphQLObjectType({
     name: { type: new GraphQLNonNull(GraphQLString) },
     username: {
       type: new GraphQLNonNull(GraphQLString),
-      resolve: (root, args) => {
-        console.log("ViewerType username resolve function");
-        console.log(args);
-        return root.db.one(
-          "SELECT * FROM users WHERE username = $1", [args.username]
-        ).then(result => result);
-      }
-    },
+      resolve: (user) => user.username
+      },
     age: { type: GraphQLInt }
   }
 })
@@ -143,7 +133,9 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: (parent, args, context) =>{
-          return db.models.user.finAll({ where: { args, isInfluencer: true } })
+           console.log("Influencer resolve args");
+            console.log(args);
+          return db.models.user.findAll({ where: args })
         }
       },
       videos: {
@@ -172,8 +164,11 @@ const queryType = new GraphQLObjectType({
             type: new GraphQLNonNull(GraphQLInt)
           }
         },
-        resolve: (root, args, context) => {
-          return db.models.user.findAll({ where: args})
+        resolve: (root, args) => {
+          let users = db.models.user.findAll({ where: args});
+           console.log("users query resolve");
+            console.log(users);
+            return users;
         }
     }
   }

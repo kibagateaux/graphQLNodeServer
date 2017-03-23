@@ -14,7 +14,7 @@ import {
   GraphQLBoolean,
 } from 'graphql';
 
-import { db } from '../server';
+import db from '../db';
 
 const resolveType = (data) => {
   if(data.instagramUsername) {
@@ -36,16 +36,9 @@ const VideoType = new GraphQLObjectType({
     author: {
       //needs to be type Influencer but impossible if defined in same file
       type: new GraphQLList(GraphQLInt),
-      resolve: (parent, args) => {
-       return db.any(
-          "SELECT * FROM users WHERE id = $1", [parent.author]
-        ).then(result => {
-          return result.map(x => x.id)
-        })
+      resolve: (video) => video.getInfluencer()
       }
-    }
-
-  },
+    },
   resolve: ({db}, args) => {
     return db.any(
       "SELECT * FROM videos WHERE id = $1", [args.id]
@@ -72,11 +65,8 @@ const InfluencerType = new GraphQLObjectType({
   fields: {
     id: {
       type: new GraphQLNonNull(GraphQLString),
-      resolve: (influ) => {
-         console.log("InfluencerType id resolve");
-         console.log(influ);
-         return influ.id
-      }},
+      resolve: (influ) => influ.id
+    },
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -142,23 +132,6 @@ const queryType = new GraphQLObjectType({
           ).then(result => result)
         }
       },
-      influencer: {
-        type: InfluencerType,
-        args: {
-          id: {
-            description: "Variable to search user in database",
-            type: new GraphQLNonNull(GraphQLString)
-          }
-        },
-        resolve: (parent, args, context) =>{
-          return db.one(
-            "SELECT * FROM users where id = $1", [args.id]
-            ).then(result => {
-               console.log("Influencer Query resolve result", result);
-              return result
-            })
-        }
-      },
       videos: {
         type: VideoType,
         args: {
@@ -170,12 +143,10 @@ const queryType = new GraphQLObjectType({
         resolve: (parent, args) => {
            console.log("Video Query resolve parent");
             console.log(parent);
-          return parent.db.any(
-            "SELECT * FROM users WHERE id = $1", [args.author]
-          ).then(result => result)
+          return
         }
       },
-      user: {
+      users: {
         type: UserType,
         args: {
           name: {
@@ -187,10 +158,9 @@ const queryType = new GraphQLObjectType({
             type: new GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: (root, args, context) => root.db.any(
-          //make name dynamic so can select by username, name, or email
-          "SELECT * FROM users WHERE username = $1", [args.id]
-        ).then(result => result)
+        resolve: (root, args, context) => {
+          return db.models.user.findAll({ where: args})
+        }
     }
   }
 })

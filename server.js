@@ -116,8 +116,8 @@ app.use('/graphql', graphqlHTTP(req => ({
 })));
 
 
-const userIDQuery = `{user(id: 2){name}}`;
-const basicUserQuery = `{ user(id:"Estrid"){ username } }`;
+const userIDQuery = `{users(id: 2){name}}`;
+const basicUserQuery = `{ users(firstName:"Estrid"){ username } }`;
 
 
 const query = `{hello}`;

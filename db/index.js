@@ -21,6 +21,14 @@ const User = Connection.define('user', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  age: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+  interests: {
+    type: Sequelize.ARRAY(Sequelize.STRING),
+    allowNull: true
+  },
   email: {
     type: Sequelize.STRING,
     validate: {
@@ -67,7 +75,7 @@ Connection.sync({ force: true }).then(()=> {
       email: Faker.internet.email()
     }).then(user => {
       return user.createVideo({
-        title: `Sample post by ${user.firstName}`
+        title: `Sample post by ${user.username}`
       });
     });
   });

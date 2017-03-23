@@ -28,6 +28,11 @@ const resolveType = (data) => {
   }
 };
 
+const digReturnData = (graphqlObj) => {
+   console.log("digReturnData graphqlObj");
+    console.log(graphqlObj.dataValues);
+  return graphqlObj.dataValues
+}
 // TODOS
 // Normalize parent/root/{db} as first resolve argument
 
@@ -42,14 +47,8 @@ const VideoType = new GraphQLObjectType({
       resolve: (video) => video.getInfluencer()
     },
     title: {
-      type: GraphQLString,
-      resolve: video => video.title
+      type: GraphQLString
     }
-  },
-  resolve: ({db}, args) => {
-    return db.any(
-      "SELECT * FROM videos WHERE id = $1", [args.id]
-    ).then(result => result)
   }
 });
 
@@ -69,22 +68,34 @@ const InfluencerType = new GraphQLObjectType({
   name: "InfluencerType",
   description: "Influencer's with content",
   interfaces: [ UserType ],
-  fields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: (influ) => influ.id
-    },
-    name: { type: GraphQLString },
-    username: { type: GraphQLString },
-    age: { type: GraphQLInt },
-    interests: { type: new GraphQLList( GraphQLString )},
-    twitterUsername: { type: GraphQLString },
-    instagramUsername: { type: GraphQLString },
-    youtubeUsername: { type: GraphQLString },
-    videos: {
-      type: new GraphQLList(VideoType),
-      resolve: (influ) => db.models.user.getVideos()
-    }
+  fields: () => {
+    return {
+      id: {
+        type: new GraphQLNonNull(GraphQLInt)
+      },
+      name: {
+        type: GraphQLString
+      },
+      age: {
+        type: GraphQLInt
+      },
+      username: {
+        type: GraphQLString
+      },
+      twitterUsername: {
+        type: GraphQLString
+      },
+      instagramUsername: {
+        type: GraphQLString
+      },
+      youtubeUsername: {
+        type: GraphQLString
+      },
+      videos: {
+        type: new GraphQLList(VideoType),
+        resolve: (influ) => influ.getVideos()
+      }
+    };
   }
 });
 
@@ -97,10 +108,7 @@ const ViewerType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLInt)},
     name: { type: new GraphQLNonNull(GraphQLString) },
-    username: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: (user) => user.username
-      },
+    username: { type: new GraphQLNonNull(GraphQLString) },
     age: { type: GraphQLInt }
   }
 })
@@ -125,12 +133,13 @@ const queryType = new GraphQLObjectType({
         }
       },
       influencers: {
-        type: InfluencerType,
+        type: new GraphQLList(InfluencerType),
         args: {
           id: {
             description: "Variable to search user in database",
             type: new GraphQLNonNull(GraphQLInt)
           }
+        // }
         },
         resolve: (parent, args, context) =>{
            console.log("Influencer resolve args");
@@ -139,7 +148,7 @@ const queryType = new GraphQLObjectType({
         }
       },
       videos: {
-        type: VideoType,
+        type: new GraphQLList(VideoType),
         args: {
           id: {
             type: new GraphQLNonNull(GraphQLString),
@@ -149,11 +158,12 @@ const queryType = new GraphQLObjectType({
         resolve: (parent, args) => {
            console.log("Video Query resolve parent");
             console.log(parent);
-          return
+          return db.models.video.findAll({ where: args })
+
         }
       },
       users: {
-        type: UserType,
+        type: new GraphQLList(UserType),
         args: {
           name: {
             description: "user's full name",

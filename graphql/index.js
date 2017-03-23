@@ -25,6 +25,9 @@ const resolveType = (data) => {
   }
 };
 
+// TODOS
+// Normalize parent/root/{db} as first resolve argument
+
 const VideoType = new GraphQLObjectType({
   name: "VideoType",
   description: "Videos for user viewing",
@@ -34,15 +37,9 @@ const VideoType = new GraphQLObjectType({
       //needs to be type Influencer but impossible if defined in same file
       type: new GraphQLList(GraphQLInt),
       resolve: (parent, args) => {
-         console.log("VideoType resolve");
-          console.log(parent.id);
-           console.log("___________________________");
-           console.log(args);
        return db.any(
           "SELECT * FROM users WHERE id = $1", [parent.author]
         ).then(result => {
-          console.log("VideoType resolve result");
-          console.log(result)
           return result.map(x => x.id)
         })
       }
@@ -73,7 +70,13 @@ const InfluencerType = new GraphQLObjectType({
   description: "Influencer's with content",
   interfaces: [ UserType ],
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString) },
+    id: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: (influ) => {
+         console.log("InfluencerType id resolve");
+         console.log(influ);
+         return influ.id
+      }},
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -83,11 +86,11 @@ const InfluencerType = new GraphQLObjectType({
     youtubeUsername: { type: GraphQLString },
     videos: {
       type: new GraphQLList(VideoType),
-      resolve: (parent, args, context) => {
+      resolve: (influ) => {
           console.log("InfluencerType Videos resolve parent");
-          console.log(parent);
+          console.log(influ);
         return db.any(
-          "SELECT * FROM VIDEOS WHERE author = $1", [parent.id]
+          "SELECT * FROM VIDEOS WHERE author = $1", [influ.id]
         ).then(result => {
           console.log("InfluencerType Videos result");
            console.log(result);
@@ -147,9 +150,9 @@ const queryType = new GraphQLObjectType({
             type: new GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: ({db}, {id}, context) =>{
+        resolve: (parent, args, context) =>{
           return db.one(
-            "SELECT * FROM users where id = $1", [id]
+            "SELECT * FROM users where id = $1", [args.id]
             ).then(result => {
                console.log("Influencer Query resolve result", result);
               return result

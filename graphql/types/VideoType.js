@@ -11,6 +11,7 @@ import {
 } from 'graphql';
 
 import { InfluencerType } from './UserType';
+
 import db from '../../db';
 
 const VideoType = new GraphQLObjectType({
@@ -20,7 +21,7 @@ const VideoType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(GraphQLString)},
     author: {
       //needs to be type Influencer but impossible if defined in same file
-      type: new GraphQLList(GraphQLInt),
+      type: InfluencerType,
       resolve: (video) => {
         video.getInfluencer();
       }
@@ -28,4 +29,4 @@ const VideoType = new GraphQLObjectType({
   }
 });
 
-export { VideoType }
+export default VideoType

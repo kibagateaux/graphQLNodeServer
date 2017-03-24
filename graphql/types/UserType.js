@@ -49,7 +49,7 @@ const InfluencerType = new GraphQLObjectType({
     youtubeUsername: { type: GraphQLString },
     videos: {
       type: new GraphQLList(VideoType),
-      resolve: (influ) => influ.getVideos();
+      resolve: (influ) => influ.getVideos()
     }
   }
 });
@@ -68,4 +68,4 @@ const ViewerType = new GraphQLObjectType({
   }
 })
 
-export { VideoType, InfluencerType };
+export default { VideoType, InfluencerType };

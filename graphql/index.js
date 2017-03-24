@@ -9,10 +9,17 @@ import {
   GraphQLObjectType,
   GraphQLInt,
   GraphQLString,
-  GraphQLNonNull,
+  GraphQLNonNull as NonNull,
   GraphQLList,
   GraphQLBoolean,
 } from 'graphql';
+
+// import {
+//   InfluencerType,
+//   VideoType,
+//   UserType,
+//   ViewerType
+// } from './types';
 
 import db from '../db';
 
@@ -40,7 +47,7 @@ const VideoType = new GraphQLObjectType({
   name: "VideoType",
   description: "Videos for user viewing",
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString)},
+    id: { type: new NonNull(GraphQLString)},
     author: {
       //needs to be type Influencer but impossible if defined in same file
       type: new GraphQLList(GraphQLInt),
@@ -56,7 +63,7 @@ const UserType = new GraphQLInterfaceType({
   name: 'UserType',
   description: "Interface for all users",
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLInt)},
+    id: { type: new NonNull(GraphQLInt)},
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -71,7 +78,7 @@ const InfluencerType = new GraphQLObjectType({
   fields: () => {
     return {
       id: {
-        type: new GraphQLNonNull(GraphQLInt)
+        type: new NonNull(GraphQLInt)
       },
       name: {
         type: GraphQLString
@@ -106,14 +113,14 @@ const ViewerType = new GraphQLObjectType({
   description: "Current user viewing application on client",
   interfaces: [ UserType ],
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLInt)},
-    name: { type: new GraphQLNonNull(GraphQLString) },
-    username: { type: new GraphQLNonNull(GraphQLString) },
+    id: { type: new NonNull(GraphQLInt)},
+    name: { type: new NonNull(GraphQLString) },
+    username: { type: new NonNull(GraphQLString) },
     age: { type: GraphQLInt }
   }
 })
 
-const queryType = new GraphQLObjectType({
+const Query = new GraphQLObjectType({
     name: 'RootQueryType',
     type: [ UserType ],
     fields: {
@@ -137,7 +144,7 @@ const queryType = new GraphQLObjectType({
         args: {
           id: {
             description: "Variable to search user in database",
-            type: new GraphQLNonNull(GraphQLInt)
+            type: new NonNull(GraphQLInt)
           }
         // }
         },
@@ -151,7 +158,7 @@ const queryType = new GraphQLObjectType({
         type: new GraphQLList(VideoType),
         args: {
           id: {
-            type: new GraphQLNonNull(GraphQLString),
+            type: new NonNull(GraphQLString),
             description: "ID of the video's author"
           }
         },
@@ -170,7 +177,7 @@ const queryType = new GraphQLObjectType({
           },
           id: {
             description: "Variable to search user in database",
-            type: new GraphQLNonNull(GraphQLInt)
+            type: new NonNull(GraphQLInt)
           }
         },
         resolve: (root, args) => {
@@ -183,10 +190,45 @@ const queryType = new GraphQLObjectType({
   }
 })
 
+const CreateNewUserWithMutation = new GraphQLObjectType({
+  name: "CreateNewUserWithMutation",
+    fields: {
+      errors: { type: new NonNull(new GraphQLList(GraphQLString)) },
+      user: { type: UserType },
+    },
+    args: {
+      email: { type: new NonNull(GraphQLString) },
+      password: { type: new NonNull(GraphQLString) },
+    }
+
+});
+
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  description: "Function to create stuff",
+  fields: {
+    createNewUser: {
+      type: UserType,
+      args: {
+        name: { type: new NonNull(GraphQLString) },
+        username: { type: new NonNull(GraphQLString) },
+      },
+      resolve: (parent, args) => {
+        console.log("createNewUser Mutation")
+        console.log(args);
+        let { name, username } = args
+        return db.models.user.create({
+          name, username, isInfluencer: false
+        })
+      }
+    }
+  }
+})
 
 
 var schema = new GraphQLSchema({
-  query: queryType
+  query: Query,
+  mutation: Mutation
 });
 
 

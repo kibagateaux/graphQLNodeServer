@@ -159,7 +159,6 @@ const queryType = new GraphQLObjectType({
            console.log("Video Query resolve parent");
             console.log(parent);
           return db.models.video.findAll({ where: args })
-
         }
       },
       users: {

@@ -39,7 +39,7 @@ const InfluencerType = new GraphQLObjectType({
   description: "Influencer's with content",
   interfaces: [ UserType ],
   fields: {
-    id: { type: new GraphQLNonNull(GraphQLString) },
+    id: { type: new GraphQLNonNull(GraphQLInt) },
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -49,17 +49,8 @@ const InfluencerType = new GraphQLObjectType({
     youtubeUsername: { type: GraphQLString },
     videos: {
       type: new GraphQLList(VideoType),
-      resolve: (parent, args, context) => {
-          console.log("InfluencerType Videos resolve parent");
-          console.log(parent);
-        return db.any(
-          "SELECT * FROM VIDEOS WHERE author = $1", [parent.id]
-        ).then(result => {
-          console.log("InfluencerType Videos result");
-           console.log(result);
-          return result
-        })
-      }}
+      resolve: (influ) => influ.getVideos();
+    }
   }
 });
 
@@ -72,16 +63,7 @@ const ViewerType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString)},
     name: { type: new GraphQLNonNull(GraphQLString) },
-    username: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: (root, args) => {
-        console.log("ViewerType username resolve function");
-        console.log(args);
-        return root.db.one(
-          "SELECT * FROM users WHERE username = $1", [args.username]
-        ).then(result => result);
-      }
-    },
+    username: { type: new GraphQLNonNull(GraphQLString) },
     age: { type: GraphQLInt }
   }
 })

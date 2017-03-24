@@ -10,6 +10,9 @@ import {
   GraphQLBoolean,
 } from 'graphql';
 
+import { InfluencerType } from './UserType';
+import db from '../../db';
+
 const VideoType = new GraphQLObjectType({
   name: "VideoType",
   description: "Videos for user viewing",
@@ -18,26 +21,10 @@ const VideoType = new GraphQLObjectType({
     author: {
       //needs to be type Influencer but impossible if defined in same file
       type: new GraphQLList(GraphQLInt),
-      resolve: (parent, args) => {
-         console.log("VideoType resolve");
-          console.log(parent.id);
-           console.log("___________________________");
-           console.log(args);
-       return db.any(
-          "SELECT * FROM users WHERE id = $1", [parent.author]
-        ).then(result => {
-          console.log("VideoType resolve result");
-          console.log(result)
-          return result.map(x => x.id)
-        })
+      resolve: (video) => {
+        video.getInfluencer();
       }
     }
-
-  },
-  resolve: ({db}, args) => {
-    return db.any(
-      "SELECT * FROM videos WHERE id = $1", [args.id]
-    ).then(result => result)
   }
 });
 

@@ -2,7 +2,8 @@ import Sequelize from 'sequelize';
 import _ from 'lodash';
 import Faker from 'faker';
 
-const Connection = new Sequelize(
+
+const Conn = new Sequelize(
   'portfolio_website',
   '00y',
   'postgres',
@@ -10,36 +11,26 @@ const Connection = new Sequelize(
     dialect: 'postgres',
     host: 'localhost'
   }
-);
+)
 
-const User = Connection.define('user', {
+const User = Conn.define('user', {
   name: {
     type: Sequelize.STRING,
     allowNull: true
   },
   username: {
     type: Sequelize.STRING,
-    allowNull: false
-  },
-  age: {
-    type: Sequelize.INTEGER,
-    allowNull: true
-  },
-  interests: {
-    type: Sequelize.ARRAY(Sequelize.STRING),
     allowNull: true
   },
   email: {
     type: Sequelize.STRING,
-    validate: {
-      isEmail: true
-    }
+    allowNull: true
   },
   twitterUsername: {
     type: Sequelize.STRING,
     allowNull: true
   },
-  facebookUsername: {
+  instagramUsername: {
     type: Sequelize.STRING,
     allowNull: true
   },
@@ -47,39 +38,32 @@ const User = Connection.define('user', {
     type: Sequelize.STRING,
     allowNull: true
   },
-  isInfluencer:{
-    type: Sequelize.BOOLEAN,
-    allowNull: false
-  }
 
 })
 
-
-const Video = Connection.define('video', {
-  title: {
-    type: Sequelize.STRING,
-    allowNull: true
+const Video = Conn.define('video', {
+  title:{
+    type: Sequelize.STRING
   }
+
 });
 
-// Relations
 User.hasMany(Video);
 Video.belongsTo(User);
 
-
-Connection.sync({ force: true }).then(()=> {
-  _.times(10, ()=> {
+Conn.sync({force:true}).then(() => {
+  _.times(10, () =>{
     return User.create({
-      username: Faker.name.firstName() + Faker.name.lastName(),
-      isInfluencer: false,
+      name: Faker.name.firstName(),
+      username: Faker.name.firstName(),
       email: Faker.internet.email()
-    }).then(user => {
-      return user.createVideo({
-        title: `Sample post by ${user.username}`
-      });
-    });
-  });
-});
+    }).then(person => {
+      return person.createVideo({
+        title: `Sample Video by ${person.username}`
+      })
+    })
+  })
+})
 
+export default Conn;
 
-export default Connection

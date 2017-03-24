@@ -12,6 +12,16 @@ import {
   schemaPrinter
 } from 'graphql';
 
+import {
+  connectionArgs,
+  connectionDefinitions,
+  connectionFromArray,
+  fromGlobalId,
+  globalIdField,
+  mutationWithClientMutationId,
+  nodeDefinitions,
+} from 'graphql-relay';
+
 // import {
 //   InfluencerType,
 //   VideoType,
@@ -45,27 +55,35 @@ const digReturnData = (graphqlObj) => {
 // TODOS
 // Normalize parent/root/{db} as first resolve argument
 
-const VideoType = new GraphQLObjectType({
-  name: "VideoType",
-  description: "Videos for user viewing",
-  fields: {
-    id: { type: new NonNull(GraphQLString)},
-    author: {
-      //needs to be type Influencer but impossible if defined in same file
-      type: new GraphQLList(GraphQLInt),
-      resolve: (video) => video.getInfluencer()
-    },
-    title: {
-      type: GraphQLString
+var {nodeInterface, nodeField} = nodeDefinitions(
+  (globalId) => {
+    var {type, id} = fromGlobalId(globalId);
+    if (type === 'User') {
+      return getUser(id);
+    } else if (type === 'Video') {
+      return getVideo(id);
+    } else {
+      return null;
+    }
+  },
+  (obj) => {
+    if (obj instanceof User) {
+      return userType;
+    } else if (obj instanceof Video)  {
+      return VideoType;
+    } else {
+      return null;
     }
   }
-});
+);
+
 
 const UserType = new GraphQLInterfaceType({
   name: 'UserType',
   description: "Interface for all users",
+  interfaces: [nodeInterface],
   fields: {
-    id: { type: new NonNull(GraphQLInt)},
+    id: globalIdField('User'),
     name: { type: GraphQLString },
     username: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -76,12 +94,10 @@ const UserType = new GraphQLInterfaceType({
 const InfluencerType = new GraphQLObjectType({
   name: "InfluencerType",
   description: "Influencer's with content",
-  interfaces: [ UserType ],
+  interfaces: [ UserType, nodeInterface ],
   fields: () => {
     return {
-      id: {
-        type: new NonNull(GraphQLInt)
-      },
+      id: globalIdField('Influencer'),
       name: {
         type: GraphQLString
       },
@@ -101,8 +117,9 @@ const InfluencerType = new GraphQLObjectType({
         type: GraphQLString
       },
       videos: {
-        type: new GraphQLList(VideoType),
-        resolve: (influ) => influ.getVideos()
+        type: videoConnection,
+        args: connectionArgs,
+        resolve: (video, args) => connectionFromArray(db.models.video.findAll({ where: args }))
       }
     };
   }
@@ -113,19 +130,50 @@ const InfluencerType = new GraphQLObjectType({
 const ViewerType = new GraphQLObjectType({
   name: "ViewerType",
   description: "Current user viewing application on client",
-  interfaces: [ UserType ],
+  interfaces: [ UserType, nodeInterface ],
   fields: {
-    id: { type: new NonNull(GraphQLInt)},
+    id: globalIdField('Viewer'),
     name: { type: new NonNull(GraphQLString) },
     username: { type: new NonNull(GraphQLString) },
     age: { type: GraphQLInt }
   }
 })
 
+
+const VideoType = new GraphQLObjectType({
+  name: "VideoType",
+  description: "Videos for user viewing",
+  interfaces: [nodeInterface],
+  fields: {
+    id: globalIdField('Video'),
+    author: {
+      //needs to be type Influencer but impossible if defined in same file
+      type: new GraphQLList(InfluencerType),
+      resolve: (influ, args) => connectionFromArray(db.models.user.findAll({ where: args }))
+    },
+    title: {
+      type: GraphQLString
+    }
+  }
+});
+
+
+
+var {connectionType: videoConnection} =
+  connectionDefinitions({name: 'Video', nodeType: VideoType});
+var {connectionType: userConnection} =
+  connectionDefinitions({name: 'User', nodeType: UserType});
+var {connectionType: influencerConnection} =
+  connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
+var {connectionType: viewerConnection} =
+  connectionDefinitions({name: 'Viewer', nodeType: ViewerType});
+
+
 const Query = new GraphQLObjectType({
     name: 'RootQueryType',
     type: [ UserType ],
     fields: {
+      node: nodeField,
       hello: {
         type: GraphQLString,
         resolve() {

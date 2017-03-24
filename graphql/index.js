@@ -1,10 +1,7 @@
 import {
-  buildSchema,
-} from 'graphql';
-
-import {
   graphql,
   GraphQLSchema,
+  printSchema,
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLInt,
@@ -12,6 +9,7 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLList,
   GraphQLBoolean,
+  schemaPrinter
 } from 'graphql';
 
 // import {
@@ -24,14 +22,18 @@ import {
 import db from '../db';
 
 const resolveType = (data) => {
-  let blah = data[0].dataValues;
-   console.log("resolveType");
-   console.log(blah)
-  if(blah.instagramUsername) {
-    return InfluencerType;
-  }
-  if(blah.username){
-    return InfluencerType;
+  if(data.dataValues){
+    let blah = data.dataValues;
+
+     console.log("resolveType");
+     console.log(blah);
+
+    if(blah.instagramUsername) {
+      return InfluencerType;
+    }
+    if(blah.username){
+      return InfluencerType;
+    }
   }
 };
 
@@ -190,18 +192,6 @@ const Query = new GraphQLObjectType({
   }
 })
 
-const CreateNewUserWithMutation = new GraphQLObjectType({
-  name: "CreateNewUserWithMutation",
-    fields: {
-      errors: { type: new NonNull(new GraphQLList(GraphQLString)) },
-      user: { type: UserType },
-    },
-    args: {
-      email: { type: new NonNull(GraphQLString) },
-      password: { type: new NonNull(GraphQLString) },
-    }
-
-});
 
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
@@ -232,20 +222,21 @@ var schema = new GraphQLSchema({
 });
 
 
-// const apiSchema = buildSchema(`
 
-//   type User{
-//     name: String!
-//     age: Int
-//     id: ID!
-//   }
+//TODO Make full Shorthand Schema
 
-//   type Query{
-//     hello: String
-//     user(name: String!, id: Int): User
-//     login(email: String!, password: String!): String
-//   }
+  // interface User{
+  //   name: String!
+  //   age: Int
+  //   id: ID!
+  // }
 
-//   `)
+  // type Query{
+  //   hello: String
+  //   user(name: String!, id: Int): User
+  //   login(email: String!, password: String!): String
+  // }
+
+
 
 export default schema;

@@ -24,10 +24,9 @@ import { CreateNewUserMutation } from './Mutations';
 import { InfluencerType, VideoType, nodeField } from './ModelTypes';
 import db from '../db';
 
-
 const MutationType = new GraphQLObjectType({
   name: "Mutation",
-  description: "Function that creates changes",
+  description: "RootMutation function that creates changes",
   fields: () => {
     return {
       createNewUser: CreateNewUserMutation
@@ -37,7 +36,7 @@ const MutationType = new GraphQLObjectType({
 
 const QueryType = new GraphQLObjectType({
   name: "Query",
-  description: "RootQuery",
+  description: "RootQuery function that returns data",
   fields: () => {
     return {
       node: nodeField,

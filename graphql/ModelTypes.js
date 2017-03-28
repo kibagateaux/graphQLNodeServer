@@ -22,6 +22,9 @@ import {
 
 
 import db from '../db';
+import { User, Video } from '../db';
+
+
 
 const resolveType = (data) => {
   if(data.instagramUsername) {
@@ -37,24 +40,29 @@ const {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     const {type, id} = fromGlobalId(globalId);
 
-     console.log("nodeDefinitions type");
-     console.log(type);
-
-    if (type === 'User') {
+   console.log("nodeDefinitions type");
+   switch(type){
+    case "Influencer":
+      const influ =  db.models.user.findById(id);
+      console.log(influ);
+     return influ;
+    case "User":
       return db.models.user.findById(id);
-    } else if (type === 'Video') {
+    case "Video":
       return  db.models.video.findById(id);
-    } else {
+    default:
       return null;
-    }
+   }
   },
   (obj) => {
+    //TODO Figure out why instanceof does not work
+    // does it have to do with original QL definitions?
+    // User is never defined but from docs
+    // UserType also throws an "unresolveable" error
     if (obj instanceof User) {
       return UserType;
     } else if (obj instanceof Video) {
       return VideoType;
-    } else if (obj instanceof Influencer){
-      return InfluencerType;
     } else {
       return null;
     }

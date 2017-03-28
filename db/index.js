@@ -66,4 +66,4 @@ Conn.sync({force:true}).then(() => {
 })
 
 export default Conn;
-
+export { User, Video };

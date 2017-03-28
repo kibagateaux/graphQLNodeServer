@@ -18,7 +18,6 @@ import {
   nodeDefinitions,
 } from 'graphql-relay';
 
-import { createNewUserMutation } from './Mutations';
 
 import db from '../db';
 
@@ -94,16 +93,15 @@ const InfluencerType = new GraphQLObjectType({
         args: connectionArgs,
         resolve: (user, args) => {
            console.log("InfluencerType videos resolve");
-            console.log(user);
-           console.log(args);
+          console.log(args);
 
-          let something = user.getVideos().then(arr =>{
+          let something = user.getVideos(user.id).then(arr =>{
              console.log("=------====video array---===--=-=====");
-             console.log(arr);
-             return connectionFromArray( arr, args)
+              console.log(arr);
+             return arrconnectionFromArray( arr, args)
            });
             console.log(" sometihng");
-            console.log(something);
+             console.log(something);
            return something;
 
         }
@@ -125,15 +123,12 @@ const VideoType = new GraphQLObjectType({
         description: "Author of the video",
         args: connectionArgs,
         resolve: (video, args) => {
-
            console.log("VideoType author resolve");
-           console.log(video);
-
           return (
             video
              .getVideo(video.id)
              .then(video =>
-               connectionFromArray(arr, args)
+               arrconnectionFromArray(arr, args)
              )
           )
         }
@@ -142,58 +137,4 @@ const VideoType = new GraphQLObjectType({
   }
 })
 
-
-const {connectionType: influencerConnection} =
-  connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
-
-const {connectionType: videoConnection} =
-  connectionDefinitions({name: 'Video', nodeType: VideoType});
-
-const MutationType = new GraphQLObjectType({
-  name: "Mutation",
-  description: "Function that creates changes",
-  fields: () => {
-    return {
-      createNewUser: createNewUserMutation
-    }
-  },
-});
-
-const QueryType = new GraphQLObjectType({
-  name: "Query",
-  description: "RootQuery",
-  fields: () => {
-    return {
-      node: nodeField,
-      influencers: {
-        type: new GraphQLList(InfluencerType),
-        args: {
-          id: {type: GraphQLInt},
-          username: {type: GraphQLString}
-        },
-        resolve: (root, args) => {
-          return db.models.user.findAll({ where: args })
-        }
-      },
-      videos: {
-        type: new GraphQLList(VideoType),
-        args: {
-          id: { type: GraphQLInt },
-          authorId: { type: GraphQLString },
-          title: {type: GraphQLString}
-        },
-        resolve: (root, args) => {
-          let id = Number.parseInt(args.id)
-           console.log("video query resole");
-            console.log(root, args);
-          return db.models.video.findAll({ where: args })
-        }
-      }
-    }
-  }
-})
-
-export default new GraphQLSchema({
-  query: QueryType,
-  // mutation: MutationType
-})
+export { VideoType, UserType, InfluencerType }

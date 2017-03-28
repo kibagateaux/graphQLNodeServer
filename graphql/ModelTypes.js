@@ -14,15 +14,16 @@ import {
   connectionArgs,
   connectionDefinitions,
   connectionFromArray,
+  connectionFromPromisedArray,
   fromGlobalId,
   globalIdField,
   mutationWithClientMutationId,
   nodeDefinitions,
 } from 'graphql-relay';
+//import PageInfoType from relay
+// https://github.com/graphql/graphql-relay-js/blob/master/src/connection/connectiontypes.js
 
-
-import db from '../db';
-import { User, Video } from '../db';
+import db, { User, Video } from '../db';
 
 
 
@@ -77,9 +78,9 @@ const UserType = new GraphQLInterfaceType({
   fields: () => {
     return {
       id: globalIdField('User'),
-      name: { type: GraphQLString },
-      username: { type: GraphQLString },
-      email: { type: GraphQLString },
+      username: { type: new GraphQLNonNull(GraphQLString) },
+      name: { type: new GraphQLNonNull(GraphQLString) },
+      email: { type: new GraphQLNonNull(GraphQLString) },
     }
   },
   resolveType: resolveType
@@ -93,32 +94,20 @@ const InfluencerType = new GraphQLObjectType({
   fields: () => {
     return {
       id: globalIdField('Influencer'),
-      name: { type: GraphQLString },
-      username: { type: GraphQLString },
-      email: { type: GraphQLString },
+      username: { type: new GraphQLNonNull(GraphQLString) },
+      name: { type: new GraphQLNonNull(GraphQLString) },
+      email: { type: new GraphQLNonNull(GraphQLString) },
       twitterUsername: { type: GraphQLString },
       instagramUsername: { type: GraphQLString },
       youtubeUsername: { type: GraphQLString },
       videos: {
         type: videoConnection,
         args: connectionArgs,
-        resolve: (user, args) => {
-           console.log("InfluencerType videos resolve");
-            console.log(user);
-           console.log(args);
-
-          let something = user.getVideos().then(arr =>{
-             console.log("=------====video array---===--=-=====");
-             console.log(arr);
-             return connectionFromArray( arr, args)
-           });
-            console.log(" sometihng");
-            console.log(something);
-           return something;
-
-        }
+        resolve: (user, args) =>
+          user.getVideos().then(arr =>
+            connectionFromArray( arr, args )
+          )
       }
-
     }
   }
 });
@@ -131,22 +120,23 @@ const VideoType = new GraphQLObjectType({
       id: globalIdField('Video'),
       title: { type: GraphQLString },
       author: {
-        type: influencerConnection,
+        type: InfluencerType,
         description: "Author of the video",
         args: connectionArgs,
         resolve: (video, args) => {
 
-           console.log("VideoType author resolve");
-           console.log(video);
+           // console.log("VideoType author resolve");
+           // const user = video.getUser()
+           // const connections = user.then(arr => {
+           //   console.log("array to connectionFromArray");
+           //    console.log([arr.dataValues.id]);
+            let author = db.models.user.findById(video.userId).then(res => res);
+            console.log("arr from db findById");
+             console.log(author);
+            console.log(author.username);
+            return author
+           }
 
-          return (
-            video
-             .getVideo(video.id)
-             .then(video =>
-               connectionFromArray(arr, args)
-             )
-          )
-        }
       }
    }
   }

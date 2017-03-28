@@ -1,6 +1,11 @@
 import { mutationWithClientMutationId, fromGlobalId } from 'graphql-relay';
 
-import { GraphQLNonNull, GraphQLString } from 'graphql';
+import {
+  GraphQLNonNull,
+  GraphQLString,
+  GraphQLList,
+  GraphQLInt,
+} from 'graphql';
 import db, { User } from '../db';
 
 import { InfluencerType, UserType, VideoType } from './ModelTypes';
@@ -11,7 +16,7 @@ const CreateNewUserMutation = mutationWithClientMutationId({
   inputFields: {
     username: { type: new GraphQLNonNull(GraphQLString) },
     name: { type: new GraphQLNonNull(GraphQLString) },
-    email: { type: GraphQLString },
+    email: { type: new GraphQLNonNull(GraphQLString) },
   },
   outputFields: {
     user: {
@@ -22,33 +27,43 @@ const CreateNewUserMutation = mutationWithClientMutationId({
       type: GraphQLString,
       resolve: ({name}) => name
     },
-    email: {
-      type: GraphQLString,
-      resolve: ({email}) => email
-    },
     username: {
       type: GraphQLString,
       resolve: ({username}) => username
     },
+    email: {
+      type: GraphQLString,
+      resolve: ({email}) => email
+    },
+    twitterUsername: {
+      type: GraphQLString,
+      resolve: ({twitterUsername}) => twitterUsername
+    },
+    youtubeUsername: {
+      type: GraphQLString,
+      resolve: ({youtubeUsername}) => youtubeUsername
+    },
+    instagramUsername: {
+      type: GraphQLString,
+      resolve: ({instagramUsername}) => instagramUsername
+    },
+    age: {
+      type: GraphQLInt,
+      resolve: ({age}) => age
+    },
+    interests: {
+      type: new GraphQLList(GraphQLString),
+      resolve: ({interests}) => interests
+    },
   },
   mutateAndGetPayload: (data) => {
-    // data - params from mutation
-    // so must use to create new user in database
-    //how to give it an Influencer or User type?
+    // how to give it an Influencer or User type?
     // in db there is no differentiaton
     // in GraphQL based on db column "is_influencer"
-    const { name, username, email } = data
+    const { name, username, email, interests } = data
     const user  = User.create({
-      name: name,
-      username:username,
-      email: email
+      name, username, email
     })._boundTo.dataValues
-
-      // user.then(res => {
-      //   let query = db.models.user.findById(res.id).then(res => res)
-      //    console.log("promise query");
-      //     console.log(query);
-      // })
 
     return user ;
   },

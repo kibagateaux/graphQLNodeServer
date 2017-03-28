@@ -58,10 +58,8 @@ const QueryType = new GraphQLObjectType({
           title: {type: GraphQLString}
         },
         resolve: (root, {id}) => {
-            id = Number.parseInt(id);
-           console.log("video query resole");
-            console.log(root, args);
-          return db.models.video.findAll({ where: args })
+          id = Number.parseInt(id);
+          return db.models.video.findAll({ where: id })
         }
       }
     }

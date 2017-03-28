@@ -16,15 +16,15 @@ const Conn = new Sequelize(
 const User = Conn.define('user', {
   name: {
     type: Sequelize.STRING,
-    allowNull: true
+    allowNull: false
   },
   username: {
     type: Sequelize.STRING,
-    allowNull: true
+    allowNull: false
   },
   email: {
     type: Sequelize.STRING,
-    allowNull: true
+    allowNull: false
   },
   twitterUsername: {
     type: Sequelize.STRING,
@@ -43,6 +43,13 @@ const User = Conn.define('user', {
 
 const Video = Conn.define('video', {
   title:{
+    type: Sequelize.STRING
+  },
+  url: {
+    type: Sequelize.STRING,
+    // allowNull: false
+  },
+  type: {
     type: Sequelize.STRING
   }
 

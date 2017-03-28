@@ -1,21 +1,20 @@
-import { InfluencerType, UserType, VideoType } from './ModelTypes';
+import { mutationWithClientMutationId, fromGlobalId } from 'graphql-relay';
+
+import { GraphQLNonNull, GraphQLInt } from 'graphql';
 import db from '../db';
 
-import { mutationWithClientMutationId, fromGlobalId } from 'graphql-relay';
-import { GraphQLNonNull} from 'graphql';
+import { InfluencerType, UserType, VideoType } from './ModelTypes';
 
- console.log("Mutations JS UserType");
-  console.log(UserType);
 
 const CreateNewUserMutation = mutationWithClientMutationId({
   name: 'CreateNewUserMutation',
   inputFields: {
-    user: { type: new GraphQLNonNull(UserType) },
+    id: { type: new GraphQLNonNull(GraphQLInt) },
   },
   outputFields: {
     user: {
-      type: UserType,
-      resolve: user => db.models.user.findById(id),
+      type: new GraphQLNonNull(InfluencerType),
+      resolve: user => db.models.user.findById(user.id),
     },
   },
   mutateAndGetPayload: ({id}) => {
@@ -24,4 +23,4 @@ const CreateNewUserMutation = mutationWithClientMutationId({
   },
 });
 
-export default { CreateNewUserMutation };
+export { CreateNewUserMutation };

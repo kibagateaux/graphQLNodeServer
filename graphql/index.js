@@ -3,9 +3,11 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
+  GraphQLBoolean,
   GraphQLList,
   GraphQLString,
-  GraphQLInterfaceType
+  GraphQLInterfaceType,
+  GraphQLNonNull
 } from 'graphql';
 
 import {
@@ -18,143 +20,17 @@ import {
   nodeDefinitions,
 } from 'graphql-relay';
 
-import { createNewUserMutation } from './Mutations';
-
+import { CreateNewUserMutation } from './Mutations';
+import { InfluencerType, VideoType, nodeField } from './ModelTypes';
 import db from '../db';
 
-const resolveType = (data) => {
-  if(data.instagramUsername) {
-    return InfluencerType;
-  }
-  if(data.username){
-    return InfluencerType;
-  }
-};
-
-const {nodeInterface, nodeField} = nodeDefinitions(
-  (globalId) => {
-    const {type, id} = fromGlobalId(globalId);
-
-     console.log("nodeDefinitions type");
-     console.log(type);
-
-    if (type === 'User') {
-      return db.models.user.findById(id);
-    } else if (type === 'Video') {
-      return  db.models.video.findById(id);
-    } else {
-      return null;
-    }
-  },
-  (obj) => {
-    if (obj instanceof User) {
-      return UserType;
-    } else if (obj instanceof Video) {
-      return VideoType;
-    } else if (obj instanceof Influencer){
-      return InfluencerType;
-    } else {
-      return null;
-    }
-  }
-);
-
-
-const UserType = new GraphQLInterfaceType({
-  name: "UserTypeInterface",
-  description: "Interface for all users",
-  interfaces: [nodeInterface],
-  fields: () => {
-    return {
-      id: globalIdField('User'),
-      name: { type: GraphQLString },
-      username: { type: GraphQLString },
-      email: { type: GraphQLString },
-    }
-  },
-  resolveType: resolveType
-});
-
-
-const InfluencerType = new GraphQLObjectType({
-  name: "InfluencerType",
-  description: "Influencer using our services",
-  interfaces: [UserType, nodeInterface],
-  fields: () => {
-    return {
-      id: globalIdField('Influencer'),
-      name: { type: GraphQLString },
-      username: { type: GraphQLString },
-      email: { type: GraphQLString },
-      twitterUsername: { type: GraphQLString },
-      instagramUsername: { type: GraphQLString },
-      youtubeUsername: { type: GraphQLString },
-      videos: {
-        type: videoConnection,
-        args: connectionArgs,
-        resolve: (user, args) => {
-           console.log("InfluencerType videos resolve");
-            console.log(user);
-           console.log(args);
-
-          let something = user.getVideos().then(arr =>{
-             console.log("=------====video array---===--=-=====");
-             console.log(arr);
-             return connectionFromArray( arr, args)
-           });
-            console.log(" sometihng");
-            console.log(something);
-           return something;
-
-        }
-      }
-
-    }
-  }
-});
-
-const VideoType = new GraphQLObjectType({
-  name: "VideoType",
-  description: "Videos created by Influencers",
-  fields: () => {
-    return {
-      id: globalIdField('Video'),
-      title: { type: GraphQLString },
-      author: {
-        type: influencerConnection,
-        description: "Author of the video",
-        args: connectionArgs,
-        resolve: (video, args) => {
-
-           console.log("VideoType author resolve");
-           console.log(video);
-
-          return (
-            video
-             .getVideo(video.id)
-             .then(video =>
-               connectionFromArray(arr, args)
-             )
-          )
-        }
-      }
-   }
-  }
-})
-
-
-const {connectionType: influencerConnection} =
-  connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
-
-const {connectionType: videoConnection} =
-  connectionDefinitions({name: 'Video', nodeType: VideoType});
 
 const MutationType = new GraphQLObjectType({
   name: "Mutation",
   description: "Function that creates changes",
   fields: () => {
     return {
-      createNewUser: createNewUserMutation
+      createNewUser: CreateNewUserMutation
     }
   },
 });
@@ -182,8 +58,8 @@ const QueryType = new GraphQLObjectType({
           authorId: { type: GraphQLString },
           title: {type: GraphQLString}
         },
-        resolve: (root, args) => {
-          let id = Number.parseInt(args.id)
+        resolve: (root, {id}) => {
+            id = Number.parseInt(id);
            console.log("video query resole");
             console.log(root, args);
           return db.models.video.findAll({ where: args })
@@ -195,5 +71,5 @@ const QueryType = new GraphQLObjectType({
 
 export default new GraphQLSchema({
   query: QueryType,
-  // mutation: MutationType
+  mutation: MutationType
 })

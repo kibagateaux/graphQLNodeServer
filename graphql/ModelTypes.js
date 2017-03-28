@@ -3,9 +3,11 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
+  GraphQLBoolean,
   GraphQLList,
   GraphQLString,
-  GraphQLInterfaceType
+  GraphQLInterfaceType,
+  GraphQLNonNull
 } from 'graphql';
 
 import {
@@ -29,6 +31,7 @@ const resolveType = (data) => {
     return InfluencerType;
   }
 };
+
 
 const {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
@@ -93,15 +96,16 @@ const InfluencerType = new GraphQLObjectType({
         args: connectionArgs,
         resolve: (user, args) => {
            console.log("InfluencerType videos resolve");
-          console.log(args);
+            console.log(user);
+           console.log(args);
 
-          let something = user.getVideos(user.id).then(arr =>{
+          let something = user.getVideos().then(arr =>{
              console.log("=------====video array---===--=-=====");
-              console.log(arr);
-             return arrconnectionFromArray( arr, args)
+             console.log(arr);
+             return connectionFromArray( arr, args)
            });
             console.log(" sometihng");
-             console.log(something);
+            console.log(something);
            return something;
 
         }
@@ -123,12 +127,15 @@ const VideoType = new GraphQLObjectType({
         description: "Author of the video",
         args: connectionArgs,
         resolve: (video, args) => {
+
            console.log("VideoType author resolve");
+           console.log(video);
+
           return (
             video
              .getVideo(video.id)
              .then(video =>
-               arrconnectionFromArray(arr, args)
+               connectionFromArray(arr, args)
              )
           )
         }
@@ -137,4 +144,10 @@ const VideoType = new GraphQLObjectType({
   }
 })
 
-export { VideoType, UserType, InfluencerType }
+const {connectionType: influencerConnection} =
+  connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
+
+const {connectionType: videoConnection} =
+  connectionDefinitions({name: 'Video', nodeType: VideoType});
+
+export { VideoType, UserType, InfluencerType, nodeField }

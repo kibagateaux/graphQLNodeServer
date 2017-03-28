@@ -1,7 +1,7 @@
 import { mutationWithClientMutationId, fromGlobalId } from 'graphql-relay';
 
 import { GraphQLNonNull, GraphQLString } from 'graphql';
-import { User } from '../db';
+import db, { User } from '../db';
 
 import { InfluencerType, UserType, VideoType } from './ModelTypes';
 
@@ -18,10 +18,18 @@ const CreateNewUserMutation = mutationWithClientMutationId({
       type: InfluencerType,
       resolve: user => user,
     },
+    name: {
+      type: GraphQLString,
+      resolve: ({name}) => name
+    },
+    email: {
+      type: GraphQLString,
+      resolve: ({email}) => email
+    },
     username: {
-      type: GraphQLString ,
-      resolve: user => { console.log(user.instance); return user.username}
-    }
+      type: GraphQLString,
+      resolve: ({username}) => username
+    },
   },
   mutateAndGetPayload: (data) => {
     // data - params from mutation
@@ -29,16 +37,20 @@ const CreateNewUserMutation = mutationWithClientMutationId({
     //how to give it an Influencer or User type?
     // in db there is no differentiaton
     // in GraphQL based on db column "is_influencer"
-    console.log("CreateNewUserMutation mutateAndGetPayload");
-    console.log(data);
     const { name, username, email } = data
-    const user = User.create({
+    const user  = User.create({
       name: name,
       username:username,
       email: email
-    }).then(res => res);
+    })._boundTo.dataValues
 
-    return { user };
+      // user.then(res => {
+      //   let query = db.models.user.findById(res.id).then(res => res)
+      //    console.log("promise query");
+      //     console.log(query);
+      // })
+
+    return user ;
   },
 });
 

@@ -3,7 +3,7 @@ import Express from 'express';
 import cors from 'cors';
 import schema from './graphql';
 import Passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
+import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { User } from './db';
 import Session from 'express-session';
 import cookieParser from 'cookie-parser';
@@ -19,39 +19,49 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(Session({
-    secret: 'I will rule the world ... eventually',
-    resave: false,
-    saveUninitialized: false
+    secret: 'I will rule the world ... eventually'
 }));
 
-// Strategy defines how passport uses authentication
-Passport.use(new LocalStrategy(
-  (username, password, done) => {
-    db.models.users.findAll({where: { username } }, (err, user) => {
-      if (err) return err
-      if (!user) {
-        return  done(null, false, { message: 'Unknown user' });
-      } else if (user.password != password) {
-        return done(null, false, "Invalid email/password comnbinatrion");
-      } else {
-        return done(null, user);
-      }
-    })
-      .catch(err => done(err))
-  }));
+// Passport.use(new FacebookStrategy({
+//     clientID: "167270610443413",
+//     clientSecret: "2c88809a935f7659dad3e54fa265ff9e",
+//     callbackURL: "http://localhost:8080/auth/facebook/callback"
+//   },
+//   function(accessToken, refreshToken, profile, cb) {
+//     User.findOrCreate({ where: { facebookId: profile.id }}, function (err, user) {
+//        console.log("error with Facebook login", err);
+//       return cb(err, user);
+//     });
+//   }
+// ));
 
-Passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+// app.get('/auth/facebook',
+//   Passport.authenticate('facebook'));
 
-Passport.deserializeUser((id, done) => {
-  User.findById(id).success((user) => {
-    done(null, user);
-  }).error((err) => {
-    done(err, null);
-  });
-});
+// app.get('/auth/facebook/callback',
+//   Passport.authenticate('facebook', { failureRedirect: '/login' }),
+//   function(req, res) {
+//     // Successful authentication, redirect home.
+//     res.redirect('/');
+//   });
 
+
+app.post("/fblogin", (req,res,next) => {
+   console.log("/fblogin");
+   console.log(req.body.data);
+   var { userID, accessToken } = req.body.data;
+
+   // api call to get fb data first
+   // save email & username and userID
+   User.findOrCreate({
+     where: { facebookId: userID, username, email, name }
+   });
+   // if succesfully created api call to facebook for data
+    // create session with new facebook data
+   // req.session.user = fb data
+   res.send("You have searched for fb user", req);
+
+})
 
 
 app.use(cors());
@@ -67,8 +77,16 @@ app.listen(8080, () => {
 });
 
 
+app.get('/register', (req, res, next) => {
+   console.log("getting '/register");
+    // console.log(req);
+    res.send("There is no register page")
+})
 
-app.post("/signup", function(req, res, next){
+
+app.post("/register", function(req, res, next){
+   console.log("'/register hit with form data", req);
+  var QLQ = `/graphql?query={influencers(username: ${req.body.username}){name videos{title}}}`
   User.findOne({
     where: {
      username: req.body.username
@@ -79,36 +97,13 @@ app.post("/signup", function(req, res, next){
         username: req.body.username,
         password: bcrypt.hashSync(req.body.password)
       }).then(function(user){
-        passport.authenticate("local", {failureRedirect:"/signup", successRedirect: "/posts"})(req, res, next)
+        passport.authenticate("local", {failureRedirect:"/", successRedirect: QLQ})(req, res, next)
       })
     } else {
       res.send("user exists")
     }
   })
 })
-
-app.post('/register', (req, res, next) => {
-    var { name, username, email, password } = req.body
-     console.log("/register form");
-      console.log(req.body);
-    User.create({
-      name, username, email, password, instagramUsername, youtubeUsername, twitterUsername
-    }).catch(err => { console.log(err); return next(err); })
-
-    // User.register(User.create({ username : username }), password, (err, user) => {
-    //     if (err) {
-    //       return res.render('register', { error : err.message });
-    //     }
-
-    Passport.authenticate('local')(req, res, () => {
-        req.session.save((err) => {
-            if (err) {
-                return next(err);
-            }
-            res.redirect('/');
-        });
-    });
-});
 
 
 app.post('/login', Passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), (req, res, next) => {
@@ -130,6 +125,3 @@ app.get('/logout', (req, res, next) => {
         res.redirect('/');
     });
 });
-
-
-export default { app, Express };

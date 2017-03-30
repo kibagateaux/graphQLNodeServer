@@ -20,29 +20,39 @@ const User = Conn.define('user', {
   },
   username: {
     type: Sequelize.STRING,
+    unique: true,
     allowNull: false
   },
   email: {
     type: Sequelize.STRING,
+    unique: true,
     allowNull: false
   },
   twitterUsername: {
     type: Sequelize.STRING,
+    unique: true,
     allowNull: true
   },
   instagramUsername: {
     type: Sequelize.STRING,
+    unique: true,
     allowNull: true
   },
   youtubeUsername: {
     type: Sequelize.STRING,
+    unique: true,
     allowNull: true
   },
   bio: {
     type: Sequelize.TEXT,
     options: {length: 'medium'},
     allowNull: true
-  }
+  },
+  facebookId: {
+    type: Sequelize.STRING,
+    unique: true,
+    allowNull: true
+  },
 
 })
 

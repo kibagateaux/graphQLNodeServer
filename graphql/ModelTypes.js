@@ -130,6 +130,32 @@ const VideoType = new GraphQLObjectType({
   }
 })
 
+// login type shit
+
+// mutation {
+//   createReindexAuthenticationProvider(input: {
+//     type: google,
+//     clientId: "YOUR-GOOGLE-CLIENT-ID",
+//     clientSecret: "YOUR-GOOGLE-CLIENT-SECRET",
+//     isEnabled: true
+//   }) {
+//     changedReindexAuthenticationProvider {
+//       clientId,
+//       id,
+//       clientSecret,
+//       type,
+//       isEnabled
+//     }
+//   }
+// }
+
+// lock is autho service
+// const lock = new Auth0Lock(auth0ClientID, auth0Domain);
+// lock.show((error, profile, id_token) => {
+//   reindex.loginWithToken('auth0', id_token);
+// });
+
+
 const {connectionType: influencerConnection} =
   connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
 

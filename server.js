@@ -7,7 +7,7 @@ const app = Express();
 
 app.use('/graphql', GraphHTTP({
   schema: schema,
-  // pretty: true,
+  pretty: true,
   graphiql: true
 }))
 

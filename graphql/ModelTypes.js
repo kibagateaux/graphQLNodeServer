@@ -123,20 +123,8 @@ const VideoType = new GraphQLObjectType({
         type: InfluencerType,
         description: "Author of the video",
         args: connectionArgs,
-        resolve: (video, args) => {
-
-           // console.log("VideoType author resolve");
-           // const user = video.getUser()
-           // const connections = user.then(arr => {
-           //   console.log("array to connectionFromArray");
-           //    console.log([arr.dataValues.id]);
-            let author = db.models.user.findById(video.userId).then(res => res);
-            console.log("arr from db findById");
-             console.log(author);
-            console.log(author.username);
-            return author
-           }
-
+        resolve: (video, args) =>
+          db.models.user.findById(video.userId).then(res => res)
       }
    }
   }

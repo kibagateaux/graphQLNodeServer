@@ -1,3 +1,5 @@
+'use strict'
+
 import Sequelize from 'sequelize';
 import _ from 'lodash';
 import Faker from 'faker';
@@ -26,6 +28,10 @@ const User = Conn.define('user', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: false
+  }
   twitterUsername: {
     type: Sequelize.STRING,
     allowNull: true
@@ -38,6 +44,11 @@ const User = Conn.define('user', {
     type: Sequelize.STRING,
     allowNull: true
   },
+  bio: {
+    type: Sequelize.TEXT,
+    options: {length: 'medium'},
+    allowNull: true
+  }
 
 })
 
@@ -49,8 +60,9 @@ const Video = Conn.define('video', {
     type: Sequelize.STRING,
     // allowNull: false
   },
-  type: {
-    type: Sequelize.STRING
+  category: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: null
   }
 
 });
@@ -63,7 +75,9 @@ Conn.sync({force:true}).then(() => {
     return User.create({
       name: Faker.name.firstName(),
       username: Faker.name.firstName(),
-      email: Faker.internet.email()
+      email: Faker.internet.email(),
+      password: Faker.name.lastName(),
+      youtubeUsername: "TechGuyWeb"
     }).then(person => {
       return person.createVideo({
         title: `Sample Video by ${person.username}`

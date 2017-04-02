@@ -16,29 +16,29 @@ const Conn = new Sequelize(
 const User = Conn.define('user', {
   name: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: true
   },
   username: {
     type: Sequelize.STRING,
     unique: true,
-    allowNull: false
+    allowNull: true
   },
   email: {
     type: Sequelize.STRING,
     unique: true,
-    allowNull: false
+    allowNull: true
   },
-  twitterUsername: {
+  twitter_username: {
     type: Sequelize.STRING,
     unique: true,
     allowNull: true
   },
-  instagramUsername: {
+  instagram_username: {
     type: Sequelize.STRING,
     unique: true,
     allowNull: true
   },
-  youtubeUsername: {
+  youtube_username: {
     type: Sequelize.STRING,
     unique: true,
     allowNull: true
@@ -48,11 +48,15 @@ const User = Conn.define('user', {
     options: {length: 'medium'},
     allowNull: true
   },
-  facebookId: {
+  facebook_id: {
     type: Sequelize.STRING,
     unique: true,
     allowNull: true
   },
+  facebook_access_token: {
+    type: Sequelize.STRING,
+    allowNull: true
+  }
 
 })
 

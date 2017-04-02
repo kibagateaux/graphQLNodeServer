@@ -8,6 +8,7 @@ import { User } from './db';
 import Session from 'express-session';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
+import fetch from 'node-fetch';
 
 const app = Express();
 
@@ -17,6 +18,8 @@ app.use(Passport.session());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
+
 
 app.use(Session({
     secret: 'I will rule the world ... eventually'
@@ -45,26 +48,43 @@ app.use(Session({
 //     res.redirect('/');
 //   });
 
+app.get("/fblogin", (req,res,next) => {
+  console.log("/fblogin get");
+  console.log(req)
+  res.send("You have searched for fb user");
+})
 
 app.post("/fblogin", (req,res,next) => {
    console.log("/fblogin");
-   console.log(req.body.data);
+
    var { userID, accessToken } = req.body.data;
 
-   // api call to get fb data first
-   // save email & username and userID
    User.findOrCreate({
-     where: { facebookId: userID, username, email, name }
-   });
+     where: { facebook_id: userID, facebook_access_token: accessToken }
+   })
+   .then(userData => {
+      var user = userData[0].dataValues
+      console.log("User found/created via /fblogin");
+      console.log(user);
+      if(user && user.faecebook_id === userID){
+         console.log(" user cmp logic pass ");
+
+        res.send({ statusCode: 200, user });
+      } else {
+      console.log(" user cmp logic fail ");
+       res.send({ statusCode: 200, user });
+      }
+
+      console.log("after user sent", user);
+   })
+   .catch(err =>  console.log("/fblogin" ,err))
    // if succesfully created api call to facebook for data
     // create session with new facebook data
    // req.session.user = fb data
-   res.send("You have searched for fb user", req);
 
 })
 
 
-app.use(cors());
 
 app.use('/graphql', GraphHTTP({
   schema: schema,

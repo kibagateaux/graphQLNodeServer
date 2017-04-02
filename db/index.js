@@ -56,7 +56,22 @@ const User = Conn.define('user', {
   facebook_access_token: {
     type: Sequelize.STRING,
     allowNull: true
-  }
+  },
+  has_applied: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  is_influencer: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  is_influencer: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
 
 })
 

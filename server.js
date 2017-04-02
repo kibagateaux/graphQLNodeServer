@@ -64,18 +64,10 @@ app.post("/fblogin", (req,res,next) => {
    })
    .then(userData => {
       var user = userData[0].dataValues
-      console.log("User found/created via /fblogin");
-      console.log(user);
-      if(user && user.faecebook_id === userID){
-         console.log(" user cmp logic pass ");
 
-        res.send({ statusCode: 200, user });
-      } else {
-      console.log(" user cmp logic fail ");
-       res.send({ statusCode: 200, user });
+      if(user && user.facebook_id === userID){
+        res.send({ statusCode: 200 });
       }
-
-      console.log("after user sent", user);
    })
    .catch(err =>  console.log("/fblogin" ,err))
    // if succesfully created api call to facebook for data

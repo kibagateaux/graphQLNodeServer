@@ -20,7 +20,13 @@ import {
   nodeDefinitions,
 } from 'graphql-relay';
 
-import { CreateNewUserMutation } from './Mutations';
+import {
+  CreateNewUserMutation,
+  applyForInfluencerMutation,
+  applicantHasBeenAcceptedMutation
+} from './Mutations';
+
+
 import { InfluencerType, VideoType, nodeField } from './ModelTypes';
 import db from '../db';
 
@@ -29,7 +35,10 @@ const MutationType = new GraphQLObjectType({
   description: "RootMutation function that creates changes",
   fields: () => {
     return {
-      createNewUser: CreateNewUserMutation
+      createNewUser: CreateNewUserMutation,
+      applyForInfluencer: applyForInfluencerMutation,
+      applicantHasBeenAccepted: applicantHasBeenAcceptedMutation
+
     }
   },
 });
@@ -46,8 +55,21 @@ const QueryType = new GraphQLObjectType({
           id: {type: GraphQLInt},
           username: {type: GraphQLString}
         },
-        resolve: (root, args) => {
-          return db.models.user.findAll({ where: args })
+        resolve: (parent, args, x, y) => {
+           console.log("influencers query resolve");
+             //Add logic to restrict only influencers
+
+             args.is_influencer = true
+
+         var influencer = db
+             .models
+             .user
+             .findAll({
+                where: args
+              })
+             .then(res => res).catch(err => err);
+              console.log(influencer);
+           return influencer
         }
       },
       videos: {

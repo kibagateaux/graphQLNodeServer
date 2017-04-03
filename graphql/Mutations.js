@@ -5,6 +5,7 @@ import {
   GraphQLString,
   GraphQLList,
   GraphQLInt,
+  GraphQLBoolean
 } from 'graphql';
 import db, { User } from '../db';
 
@@ -57,9 +58,9 @@ const CreateNewUserMutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: (data) => {
-    // how to give it an Influencer or User type?
+    // Q: how to give it an Influencer or User type?
     // in db there is no differentiaton
-    // in GraphQL based on db column "is_influencer"
+    // A: in GraphQL based on db column "is_influencer"
     const { name, username, email, interests } = data
     const user  = User.create({
       name, username, email
@@ -69,4 +70,63 @@ const CreateNewUserMutation = mutationWithClientMutationId({
   },
 });
 
-export { CreateNewUserMutation };
+// mutation hasApplied - adds s.media usernames, has_applied = true
+const applyForInfluencerMutation = new mutationWithClientMutationId({
+  name: "applyForInfluencerMutation",
+  description: "Changes viewer's status to 'Has Applied' and accepts s.media usernames",
+  inputFields: {
+    twitterUsername: {
+      type: GraphQLString,
+    },
+    youtubeUsername: {
+      type: GraphQLString,
+    },
+    instagramUsername: {
+      type: GraphQLString,
+    }
+  },
+  outputFields: {
+    user: {type: UserType, resolve: (user) => user },
+    hasApplied: {
+      type: GraphQLBoolean,
+      resolve: ({has_applied}) => has_applied
+    }
+  },
+  mutateAndGetPayload: (data) => {
+    data.has_applied = true;
+    const user = User.findById(id)
+      .then(user => user.set(data))
+    const updatedUser = user.save().then(user => user);
+
+    return updatedUser;
+  }
+
+});
+
+const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
+  name: "applicantHasBeenAcceptedMutation",
+  description: "Applicant has been accpeted and is formally an 'influencer' ",
+  inputFields: {
+    isInfluencer: { type: GraphQLBoolean }
+  },
+  outputFields: {
+    user: { type: UserType, resolve: user => user }
+  },
+  mutateAndGetPayload: (data) => {
+    const influencer = User.findById(id)
+      .then(user =>  user.set({is_influencer: true}) );
+    return influencer;
+  }
+})
+// mutations needed now
+// mutation hasBeenAccepted - is_influencer = true
+// mutation changeField - changes any field (email, username etc)
+
+// mutations needed later
+// mutation viewerFollowsInfluencer - idk following is future
+
+export {
+  CreateNewUserMutation,
+  applyForInfluencerMutation,
+  applicantHasBeenAcceptedMutation
+};

@@ -70,7 +70,7 @@ const User = Conn.define('user', {
   is_influencer: {
     type: Sequelize.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: true
   },
 
 })

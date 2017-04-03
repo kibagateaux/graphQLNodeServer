@@ -36,64 +36,13 @@ const resolveType = (data) => {
   }
 };
 
-
-// const {nodeInterface, nodeField} = nodeDefinitions(
-//   (globalId) => {
-//     const {type, id} = fromGlobalId(globalId);
-
-//    console.log("nodeDefinitions type");
-//    switch(type){
-//     case "Influencer":
-//       let influ =  db.models.user.findById(id);
-//        console.log("Influencer Type");
-//       console.log(influ);
-//      return influ;
-//     case "Plebian":
-//       let pleb =  db.models.user.findById(id);
-//        console.log("Plebian Type");
-//       console.log(pleb);
-//       return pleb
-//     case "Video":
-//       let video =  db.models.video.findById(id);
-//        console.log(" Video Type");
-//       console.log(video);
-//       return  video
-//     default:
-//       return null;
-//    }
-//   },
-//   (obj) => {
-//       console.log("instance of ");
-//     //TODO Figure out why instanceof does not work
-//     // does it have to do with original QL definitions?
-//     // User is never defined but from docs
-//     // UserType also throws an "unresolveable" error
-//     if (obj instanceof User) {
-//        console.log("instance of Influencer");
-//         console.log(obj.dataValues);
-//       return InfluencerType;
-//     } else if (obj instanceof VideoType) {
-//       console.log("instance of Video");
-//       return VideoType;
-//     } else if (obj instanceof UserType) {
-//       console.log("instance of User");
-//       return UserType;
-//     } else if (obj instanceof PlebianType){
-//       console.log("instance of Plebian");
-//       return PlebianType;
-//     }
-//     console.log("no instance de nada");
-//     return null;
-//   }
-// );
-
 var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
-     console.log(type);
+    console.log(type);
     if (type === 'User') {
       return db.models.user.findById(id)
-   } else if (type === 'Video') {
+    } else if (type === 'Video') {
        return db.models.video.findById(id)
     }
     else if (type === 'Influencer') {
@@ -103,18 +52,14 @@ var {nodeInterface, nodeField} = nodeDefinitions(
     }
   },
   (obj) => {
-
-    console.log(obj);               // Sequelize object
-    console.log(User);              // user
-    console.log(User.constructor);  // valid constructor
-
-    // This is where the error occurs
-    if (obj instanceof User) {
-      return UserType;
-   } else if (obj instanceof Video)  {
-      return VideoType;
-    } else {
-      return null;
+    switch(Object.getPrototypeOf(obj).Model){
+      case User:
+        if(obj.is_influencer) return InfluencerType
+        return UserType;
+      case Video:
+        return VideoType;
+      default:
+        return null;
     }
   }
 );

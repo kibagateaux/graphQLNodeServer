@@ -72,6 +72,15 @@ const User = Conn.define('user', {
     allowNull: false,
     defaultValue: true
   },
+  has_agency: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  agency_name: {
+    type: Sequelize.STRING,
+    allowNull: true
+  }
 
 })
 
@@ -83,7 +92,7 @@ const Video = Conn.define('video', {
     type: Sequelize.STRING,
     // allowNull: false
   },
-  type: {
+  category: {
     type: Sequelize.STRING
   }
 

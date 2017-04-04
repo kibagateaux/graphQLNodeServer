@@ -90,17 +90,6 @@ app.post("/register", function(req, res, next){
   })
 })
 
-
-app.post('/login', Passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), (req, res, next) => {
-    req.session.save((err) => {
-        if (err) {
-            return next(err);
-        }
-        res.redirect('/');
-    });
-});
-
-
 app.get('/logout', (req, res, next) => {
     req.logout();
     req.session.save((err) => {

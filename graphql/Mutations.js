@@ -110,8 +110,8 @@ const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
     isInfluencer: { type: GraphQLBoolean }
   },
   outputFields: {
-    user: { type: UserType, resolve: user => user }
-    isInfluencer: {}
+    user: { type: UserType, resolve: user => user },
+    isInfluencer: { type: GraphQLBoolean, resolve: user => user.is_influencer }
   },
   mutateAndGetPayload: (data) => {
     console.log("applicantHasBeenAcceptedMutation data");
@@ -138,7 +138,7 @@ const updateUserDataMutation = new mutationWithClientMutationId({
     interests: { type: new GraphQLList(GraphQLString) },
   },
   outputFields: {
-    user: { type: UserType, resolve: user => user }
+    user: { type: UserType, resolve: user => user },
     id: {
       type: GraphQLString,
       resolve: ({ id }) => id
@@ -170,7 +170,7 @@ const updateUserDataMutation = new mutationWithClientMutationId({
       resolve: ({ instagramUsername }) =>instagramUsername
     },
     interests: {
-      type: new GraphQLList(GraphQLString)
+      type: new GraphQLList(GraphQLString),
       resolve: ({ interests }) => interests
     }
   },
@@ -178,13 +178,17 @@ const updateUserDataMutation = new mutationWithClientMutationId({
     console.log("applicantHasBeenAcceptedMutation data");
     console.log(data);
     let { id } = data;
+    // Must use .save, #1 error when debugging
     let user = User.findById(id)
       .then(user =>  user.set(data) );
     return user;
   }
 })
+
 // mutations needed now
-// mutation changeField - changes any field (email, username etc)
+// influencerUploadsVideo
+// delete account
+//
 
 // mutations needed later
 // mutation viewerFollowsInfluencer - idk following is future
@@ -192,5 +196,6 @@ const updateUserDataMutation = new mutationWithClientMutationId({
 export {
   CreateNewUserMutation,
   applyForInfluencerMutation,
-  applicantHasBeenAcceptedMutation
+  applicantHasBeenAcceptedMutation,
+  updateUserDataMutation
 };

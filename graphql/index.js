@@ -23,11 +23,12 @@ import {
 import {
   CreateNewUserMutation,
   applyForInfluencerMutation,
-  applicantHasBeenAcceptedMutation
+  applicantHasBeenAcceptedMutation,
+  updateUserDataMutation
 } from './Mutations';
 
 
-import { InfluencerType, VideoType, nodeField } from './ModelTypes';
+import { InfluencerType, VideoType, nodeField, UserType } from './ModelTypes';
 import db from '../db';
 
 const MutationType = new GraphQLObjectType({
@@ -37,7 +38,8 @@ const MutationType = new GraphQLObjectType({
     return {
       createNewUser: CreateNewUserMutation,
       applyForInfluencer: applyForInfluencerMutation,
-      applicantHasBeenAccepted: applicantHasBeenAcceptedMutation
+      applicantHasBeenAccepted: applicantHasBeenAcceptedMutation,
+      updateUserData: updateUserDataMutation,
 
     }
   },
@@ -52,8 +54,8 @@ const QueryType = new GraphQLObjectType({
       influencers: {
         type: new GraphQLList(InfluencerType),
         args: {
-          id: {type: GraphQLInt},
-          username: {type: GraphQLString}
+          id: { type: GraphQLInt },
+          username: { type: GraphQLString }
         },
         resolve: (parent, args, x, y) => {
           console.log("influencers query resolve");
@@ -72,11 +74,21 @@ const QueryType = new GraphQLObjectType({
         args: {
           id: { type: GraphQLInt },
           userId: { type: GraphQLString },
-          title: {type: GraphQLString}
+          title: { type: GraphQLString }
         },
-        resolve: (root, args) => {
+        resolve: (parent, args) => {
           // id = Number.parseInt(id);
           return db.models.video.findAll({ where: args })
+        }
+      },
+      users: {
+        type: new GraphQLList(UserType),
+        args: {
+          id: { type: GraphQLInt },
+          username: { type: GraphQLString }
+        },
+        resolve: (parent, args) => {
+          return db.models.user.findAll({ where: args })
         }
       }
     }

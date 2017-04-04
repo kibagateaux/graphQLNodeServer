@@ -75,8 +75,8 @@ const UserType = new GraphQLInterfaceType({
       username: { type: GraphQLString },
       name: { type: GraphQLString },
       email: { type: GraphQLString },
-      facebook_id: { type: GraphQLString },
-      facebook_access_token: { type: GraphQLString },
+      facebookId: { type: GraphQLString },
+      facebookAccessToken: { type: GraphQLString },
       // these are custom interests pertaining to our product
       // for an exhaustive list use FB or Google user data
       interests: { type: new GraphQLList(GraphQLString) }
@@ -96,12 +96,14 @@ const InfluencerType = new GraphQLObjectType({
       username: { type: GraphQLString },
       name: { type: GraphQLString },
       email: { type: GraphQLString },
-      facebook_id: { type: GraphQLString },
-      facebook_access_token: { type: GraphQLString },
+      facebookId: { type: GraphQLString },
+      facebookAccessToken: { type: GraphQLString },
       twitterUsername: { type: GraphQLString },
       instagramUsername: { type: GraphQLString },
       youtubeUsername: { type: GraphQLString },
       interests: { type: new GraphQLList(GraphQLString) },
+      hasAgency: { type: GraphQLString },
+      agencyName: { type: GraphQLString },
       videos: {
         type: videoConnection,
         args: connectionArgs,
@@ -122,6 +124,7 @@ const VideoType = new GraphQLObjectType({
     return {
       id: globalIdField('Video'),
       title: { type: GraphQLString },
+      category: { type: new GraphQLList(GraphQLString) },
       author: {
         type: InfluencerType,
         description: "Author of the video",

@@ -118,8 +118,42 @@ const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
     return influencer;
   }
 })
+
+const updateUserDataMutation = new mutationWithClientMutationId({
+  name: "updateUserDataMutation",
+  description: "Updates user data in database for given fields",
+  inputFields:{
+    name: {
+      type: GraphQLString,
+      resolve: ({name}) => name
+    },
+    username: {
+      type: GraphQLString,
+      resolve: ({username}) => username
+    },
+    email: {
+      type: GraphQLString,
+      resolve: ({email}) => email
+    },
+    twitterUsername: {
+      type: GraphQLString,
+      resolve: ({twitterUsername}) => twitterUsername
+    },
+    youtubeUsername: {
+      type: GraphQLString,
+      resolve: ({youtubeUsername}) => youtubeUsername
+    },
+    instagramUsername: {
+      type: GraphQLString,
+      resolve: ({instagramUsername}) => instagramUsername
+    },
+    interests: {
+      type: new GraphQLList(GraphQLString),
+      resolve: ({interests}) => interests
+    },
+  }
+})
 // mutations needed now
-// mutation hasBeenAccepted - is_influencer = true
 // mutation changeField - changes any field (email, username etc)
 
 // mutations needed later

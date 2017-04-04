@@ -2,8 +2,6 @@ import GraphHTTP from 'express-graphql';
 import Express from 'express';
 import cors from 'cors';
 import schema from './graphql';
-import Passport from 'passport';
-import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { User } from './db';
 import Session from 'express-session';
 import cookieParser from 'cookie-parser';
@@ -12,8 +10,6 @@ import fetch from 'node-fetch';
 
 const app = Express();
 
-app.use(Passport.initialize());
-app.use(Passport.session());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -22,31 +18,8 @@ app.use(cors());
 
 
 app.use(Session({
-    secret: 'I will rule the world ... eventually'
+   secret: 'I will rule the world ... eventually',
 }));
-
-// Passport.use(new FacebookStrategy({
-//     clientID: "167270610443413",
-//     clientSecret: "2c88809a935f7659dad3e54fa265ff9e",
-//     callbackURL: "http://localhost:8080/auth/facebook/callback"
-//   },
-//   function(accessToken, refreshToken, profile, cb) {
-//     User.findOrCreate({ where: { facebookId: profile.id }}, function (err, user) {
-//        console.log("error with Facebook login", err);
-//       return cb(err, user);
-//     });
-//   }
-// ));
-
-// app.get('/auth/facebook',
-//   Passport.authenticate('facebook'));
-
-// app.get('/auth/facebook/callback',
-//   Passport.authenticate('facebook', { failureRedirect: '/login' }),
-//   function(req, res) {
-//     // Successful authentication, redirect home.
-//     res.redirect('/');
-//   });
 
 app.get("/fblogin", (req,res,next) => {
   console.log("/fblogin get");

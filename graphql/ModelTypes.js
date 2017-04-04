@@ -20,6 +20,7 @@ import {
   mutationWithClientMutationId,
   nodeDefinitions,
 } from 'graphql-relay';
+
 //import PageInfoType from relay
 // https://github.com/graphql/graphql-relay-js/blob/master/src/connection/connectiontypes.js
 
@@ -76,28 +77,14 @@ const UserType = new GraphQLInterfaceType({
       name: { type: GraphQLString },
       email: { type: GraphQLString },
       facebook_id: { type: GraphQLString },
-      facebook_access_token: { type: GraphQLString }
+      facebook_access_token: { type: GraphQLString },
+      // these are custom interests pertaining to our product
+      // for additional use FB or Google user data
+      interests: { type: new GraphQLList(GraphQLString) }
     }
   },
   resolveType: resolveType
 });
-
-const PlebianType = new GraphQLObjectType({
-  name: "PlebianType",
-  description: "Everday user, not an influencer ... or anyone important for that matter",
-  interfaces: [ UserType, nodeInterface],
-  fields: () => (
-    {
-     id: globalIdField('Plebian'),
-     username: { type: GraphQLString },
-     name: { type: GraphQLString },
-     email: { type: GraphQLString },
-     facebook_id: { type: GraphQLString },
-     facebook_access_token: { type: GraphQLString }
-    }
-  )
-
-})
 
 
 const InfluencerType = new GraphQLObjectType({
@@ -115,6 +102,7 @@ const InfluencerType = new GraphQLObjectType({
       twitterUsername: { type: GraphQLString },
       instagramUsername: { type: GraphQLString },
       youtubeUsername: { type: GraphQLString },
+      interests: { type: new GraphQLList(GraphQLString) },
       videos: {
         type: videoConnection,
         args: connectionArgs,
@@ -145,25 +133,6 @@ const VideoType = new GraphQLObjectType({
    }
   }
 })
-
-// login type shit
-
-// mutation {
-//   createReindexAuthenticationProvider(input: {
-//     type: google,
-//     clientId: "YOUR-GOOGLE-CLIENT-ID",
-//     clientSecret: "YOUR-GOOGLE-CLIENT-SECRET",
-//     isEnabled: true
-//   }) {
-//     changedReindexAuthenticationProvider {
-//       clientId,
-//       id,
-//       clientSecret,
-//       type,
-//       isEnabled
-//     }
-//   }
-// }
 
 
 const {connectionType: influencerConnection} =

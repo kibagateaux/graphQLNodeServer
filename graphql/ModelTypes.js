@@ -1,6 +1,4 @@
 import {
-  graphql,
-  GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
   GraphQLBoolean,
@@ -14,10 +12,8 @@ import {
   connectionArgs,
   connectionDefinitions,
   connectionFromArray,
-  connectionFromPromisedArray,
   fromGlobalId,
   globalIdField,
-  mutationWithClientMutationId,
   nodeDefinitions,
 } from 'graphql-relay';
 
@@ -37,7 +33,7 @@ const resolveType = (data) => {
   }
 };
 
-var {nodeInterface, nodeField} = nodeDefinitions(
+const {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
     console.log(type);
@@ -53,6 +49,9 @@ var {nodeInterface, nodeField} = nodeDefinitions(
     }
   },
   (obj) => {
+     console.log("nodeDefinitions");
+      console.log(obj);
+       console.log(obj.is_influencer);
     switch(Object.getPrototypeOf(obj).Model){
       case User:
         if(obj.is_influencer) return InfluencerType
@@ -79,7 +78,7 @@ const UserType = new GraphQLInterfaceType({
       facebook_id: { type: GraphQLString },
       facebook_access_token: { type: GraphQLString },
       // these are custom interests pertaining to our product
-      // for additional use FB or Google user data
+      // for an exhaustive list use FB or Google user data
       interests: { type: new GraphQLList(GraphQLString) }
     }
   },

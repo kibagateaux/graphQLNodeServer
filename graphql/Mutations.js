@@ -111,8 +111,13 @@ const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
   },
   outputFields: {
     user: { type: UserType, resolve: user => user }
+    isInfluencer: {}
   },
   mutateAndGetPayload: (data) => {
+    console.log("applicantHasBeenAcceptedMutation data");
+    console.log(data);
+    let { id } = data;
+    // Must use .save, #1 error when debugging
     const influencer = User.findById(id)
       .then(user =>  user.set({is_influencer: true}) );
     return influencer;
@@ -123,34 +128,59 @@ const updateUserDataMutation = new mutationWithClientMutationId({
   name: "updateUserDataMutation",
   description: "Updates user data in database for given fields",
   inputFields:{
+    id: { type: GraphQLString },
+    name: { type: GraphQLString },
+    username: { type: GraphQLString },
+    email: { type: GraphQLString },
+    twitterUsername: { type: GraphQLString },
+    youtubeUsername: { type: GraphQLString },
+    instagramUsername: { type: GraphQLString },
+    interests: { type: new GraphQLList(GraphQLString) },
+  },
+  outputFields: {
+    user: { type: UserType, resolve: user => user }
+    id: {
+      type: GraphQLString,
+      resolve: ({ id }) => id
+    },
     name: {
       type: GraphQLString,
-      resolve: ({name}) => name
+      resolve: ({ name }) => namE
     },
     username: {
       type: GraphQLString,
-      resolve: ({username}) => username
+     resolve: ({ username }) => username
     },
     email: {
       type: GraphQLString,
-      resolve: ({email}) => email
+      resolve: ({ email }) => email
     },
     twitterUsername: {
       type: GraphQLString,
-      resolve: ({twitterUsername}) => twitterUsername
+      //may be twitter_username from bd
+      resolve: ({ twitterUsername }) => twitterUsername
     },
     youtubeUsername: {
       type: GraphQLString,
-      resolve: ({youtubeUsername}) => youtubeUsername
+      resolve: ({ youtubeUsername }) => youtubeUsername
+
     },
     instagramUsername: {
-      type: GraphQLString,
-      resolve: ({instagramUsername}) => instagramUsername
+      type: GraphQLString ,
+      resolve: ({ instagramUsername }) =>instagramUsername
     },
     interests: {
-      type: new GraphQLList(GraphQLString),
-      resolve: ({interests}) => interests
-    },
+      type: new GraphQLList(GraphQLString)
+      resolve: ({ interests }) => interests
+    }
+  },
+  mutateAndGetPayload: (data) => {
+    console.log("applicantHasBeenAcceptedMutation data");
+    console.log(data);
+    let { id } = data;
+    let user = User.findById(id)
+      .then(user =>  user.set(data) );
+    return user;
   }
 })
 // mutations needed now

@@ -56,32 +56,27 @@ const QueryType = new GraphQLObjectType({
           username: {type: GraphQLString}
         },
         resolve: (parent, args, x, y) => {
-           console.log("influencers query resolve");
-             //Add logic to restrict only influencers
-
-             args.is_influencer = true
-
-         var influencer = db
-             .models
-             .user
-             .findAll({
-                where: args
-              })
-             .then(res => res).catch(err => err);
-              console.log(influencer);
-           return influencer
+          console.log("influencers query resolve");
+          // Logic to filter for influencers
+          args.is_influencer = true
+          var influencer = db
+            .models.user
+            .findAll({ where: args })
+            .then(res => res).catch(err => err);
+          console.log(influencer);
+          return influencer
         }
       },
       videos: {
         type: new GraphQLList(VideoType),
         args: {
           id: { type: GraphQLInt },
-          authorId: { type: GraphQLString },
+          userId: { type: GraphQLString },
           title: {type: GraphQLString}
         },
-        resolve: (root, {id}) => {
-          id = Number.parseInt(id);
-          return db.models.video.findAll({ where: id })
+        resolve: (root, args) => {
+          // id = Number.parseInt(id);
+          return db.models.video.findAll({ where: args })
         }
       }
     }

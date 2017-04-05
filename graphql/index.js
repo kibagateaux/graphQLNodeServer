@@ -1,24 +1,12 @@
 import {
-  graphql,
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
   GraphQLBoolean,
   GraphQLList,
   GraphQLString,
-  GraphQLInterfaceType,
   GraphQLNonNull
 } from 'graphql';
-
-import {
-  connectionArgs,
-  connectionDefinitions,
-  connectionFromArray,
-  fromGlobalId,
-  globalIdField,
-  mutationWithClientMutationId,
-  nodeDefinitions,
-} from 'graphql-relay';
 
 import {
   CreateNewUserMutation,
@@ -27,8 +15,14 @@ import {
   updateUserDataMutation
 } from './Mutations';
 
+import {
+  InfluencerType,
+  UserType,
+  VideoType,
+  MediumType,
+  nodeField,
+} from './ModelTypes';
 
-import { InfluencerType, VideoType, nodeField, UserType } from './ModelTypes';
 import db from '../db';
 
 const MutationType = new GraphQLObjectType({

@@ -186,7 +186,7 @@ const updateUserDataMutation = new mutationWithClientMutationId({
 })
 
 // mutations needed now
-// influencerUploadsVideo
+// influencerUploadsContent
 // delete account
 //
 

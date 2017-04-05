@@ -5,7 +5,8 @@ import {
   GraphQLList,
   GraphQLString,
   GraphQLInterfaceType,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLEnumType,
 } from 'graphql';
 
 import {
@@ -20,7 +21,7 @@ import {
 //import PageInfoType from relay
 // https://github.com/graphql/graphql-relay-js/blob/master/src/connection/connectiontypes.js
 
-import db, { User, Video } from '../db';
+import db, { User, Video, Media } from '../db';
 
 
 
@@ -104,13 +105,23 @@ const InfluencerType = new GraphQLObjectType({
       interests: { type: new GraphQLList(GraphQLString) },
       hasAgency: { type: GraphQLString },
       agencyName: { type: GraphQLString },
+      followers: { type: new GraphQLList(UserType) },
       videos: {
         type: videoConnection,
+        description: "Videos authored by Influencer",
         args: connectionArgs,
         resolve: (user, args) =>
           user.getVideos().then(arr =>
             connectionFromArray( arr, args )
           )
+      },
+      media: {
+        type: mediaConnection,
+        description: "Media authored by Influencer",
+        args: connectionArgs,
+        resolve: (user, args) =>
+          user.getMedia()
+           .then(arr => connectionFromArray( arr, args ) )
       }
     }
   }
@@ -126,15 +137,61 @@ const VideoType = new GraphQLObjectType({
       title: { type: GraphQLString },
       category: { type: new GraphQLList(GraphQLString) },
       author: {
-        type: InfluencerType,
+        type: influencerConnection,
+        // type: InfluencerType,
         description: "Author of the video",
         args: connectionArgs,
         resolve: (video, args) =>
-          db.models.user.findById(video.userId).then(res => res)
+          db.models.user.findAll({
+            where: { id : video.userId }
+          })
+          .then(arr => connectionFromArray( arr, args ))
       }
    }
   }
-})
+});
+
+// MediaTypeEnum  example
+// var MediaTypeEnum = new GraphQLEnumType({
+//   name: 'RGB',
+//   values: {
+//     RED: { value: 0 },
+//     GREEN: { value: 1 },
+//     BLUE: { value: 2 }
+//   }
+// });
+
+// Should Media be an interface for Videos / Pictures / etc. ?
+// |______|______|
+// | Pros | Cons |
+// | One DB Model |
+const MediaType = new GraphQLObjectType({
+  name: "MediaType",
+  description: "Media created by Influencers",
+  interfaces: [nodeInterface],
+  fields: () => {
+    return {
+      id: globalIdField('Media'),
+      caption: { type: GraphQLString },
+      // type should be new GQL Enum
+      mediaType: {
+        type: GraphQLString,
+        resolve: media => media.media_type
+      },
+      category: { type: new GraphQLList(GraphQLString) },
+      author: {
+        type: influencerConnection,
+        description: "Author of the medium",
+        args: connectionArgs,
+        resolve: (medium, args) =>
+          db.models.user.findAll({
+            where: { id : medium.userId }
+          })
+          .then(arr => connectionFromArray( arr, args ))
+      }
+   }
+  }
+});
 
 
 const {connectionType: influencerConnection} =
@@ -143,4 +200,8 @@ const {connectionType: influencerConnection} =
 const {connectionType: videoConnection} =
   connectionDefinitions({name: 'Video', nodeType: VideoType});
 
-export { VideoType, UserType, InfluencerType, nodeField }
+const {connectionType: mediaConnection} =
+  connectionDefinitions({name: 'Media', nodeType: MediaType});
+
+
+export { VideoType, MediaType, UserType, InfluencerType, nodeField }

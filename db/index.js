@@ -92,14 +92,36 @@ const Video = Conn.define('video', {
     type: Sequelize.STRING,
     // allowNull: false
   },
-  category: {
+  type: {
     type: Sequelize.STRING
   }
 
 });
 
+const Medium = Conn.define('medium', {
+  caption:{
+    type: Sequelize.STRING
+  },
+  source_url: {
+    type: Sequelize.STRING,
+    // allowNull: false
+  },
+  category: {
+    type: Sequelize.ARRAY(Sequelize.STRING),
+    defaultValue: ["fashion", "money", "entrepreneurship"]
+  },
+  media_type: {
+    type: Sequelize.STRING
+  }
+
+});
+
+
 User.hasMany(Video);
 Video.belongsTo(User);
+
+User.hasMany(Medium);
+Medium.belongsTo(User);
 
 Conn.sync({force:true}).then(() => {
   _.times(10, () =>{
@@ -108,7 +130,7 @@ Conn.sync({force:true}).then(() => {
       username: Faker.name.firstName(),
       email: Faker.internet.email()
     }).then(person => {
-      return person.createVideo({
+      return person.createMedium({
         title: `Sample Video by ${person.username}`
       })
     })
@@ -116,4 +138,4 @@ Conn.sync({force:true}).then(() => {
 })
 
 export default Conn;
-export { User, Video };
+export { User, Video, Medium };

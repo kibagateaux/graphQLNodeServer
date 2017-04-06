@@ -45,6 +45,7 @@ const QueryType = new GraphQLObjectType({
   fields: () => {
     return {
       node: nodeField,
+      schema: printSchema,
       influencers: {
         type: new GraphQLList(InfluencerType),
         args: {

@@ -1,12 +1,13 @@
 import GraphHTTP from 'express-graphql';
 import Express from 'express';
 import cors from 'cors';
-import schema from './graphql';
-import { User } from './db';
 import Session from 'express-session';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
+
+import schema from './graphql';
+import { User } from './db';
 
 const app = Express();
 
@@ -60,35 +61,6 @@ app.use('/graphql', GraphHTTP({
 app.listen(8080, () => {
    console.log("App listening on port 8080");
 });
-
-
-app.get('/register', (req, res, next) => {
-   console.log("getting '/register");
-    // console.log(req);
-    res.send("There is no register page")
-})
-
-
-app.post("/register", function(req, res, next){
-   console.log("'/register hit with form data", req);
-  var QLQ = `/graphql?query={influencers(username: ${req.body.username}){name videos{title}}}`
-  User.findOne({
-    where: {
-     username: req.body.username
-    }
-  }).then(function(user){
-    if(!user){
-      User.create({
-        username: req.body.username,
-        password: bcrypt.hashSync(req.body.password)
-      }).then(function(user){
-        passport.authenticate("local", {failureRedirect:"/", successRedirect: QLQ})(req, res, next)
-      })
-    } else {
-      res.send("user exists")
-    }
-  })
-})
 
 app.get('/logout', (req, res, next) => {
     req.logout();

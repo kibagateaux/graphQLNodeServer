@@ -5,8 +5,11 @@ import {
   GraphQLBoolean,
   GraphQLList,
   GraphQLString,
-  GraphQLNonNull
+  GraphQLNonNull,
+  printSchema
 } from 'graphql';
+import { introspectionQuery } from 'graphql/utilities'
+// require('graphql/utilities').introspectionQuery
 
 import {
   CreateNewUserMutation,
@@ -45,15 +48,40 @@ const QueryType = new GraphQLObjectType({
   fields: () => {
     return {
       node: nodeField,
-      schema: printSchema,
+// * mplementation: How to use authentication token *
+// * together with viewer *
+
+
+// On the server-side, create a mutation to obtain
+  // an authentication token. Let's name it LoginMutation.
+  // Input to this mutation are the user credentials
+  // and the output is an authentication token.
+// Not a mutation in this case.
+// FBLogin useus mutation callback to register OAuth
+
+
+// On the client-side, implement a client-side mutation.
+  // After the mutation is successful,
+  // store the authentication token.
+
+// On the client-side, add authToken parameter
+  // for your viewer queries.
+  // The value of authToken is the authentication token
+  // received after successful login mutation.
+
+      schema: {
+        type: GraphQLString,
+        resolve: () => introspectionQuery
+      },
       influencers: {
         type: new GraphQLList(InfluencerType),
         args: {
           id: { type: GraphQLInt },
           username: { type: GraphQLString }
         },
-        resolve: (parent, args, x, y) => {
+        resolve: (parent, args) => {
           console.log("influencers query resolve");
+           console.log(args);
           // Logic to filter for influencers
           args.is_influencer = true
           var influencer = db

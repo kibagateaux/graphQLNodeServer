@@ -20,6 +20,10 @@ app.use(cors());
 
 app.use(Session({
    secret: 'I will rule the world ... eventually',
+   resave: false,
+   saveUninitialized: true,
+   cookie: { secure: false }
+
 }));
 
 app.get("/fblogin", (req,res,next) => {
@@ -38,8 +42,8 @@ app.post("/fblogin", (req,res,next) => {
    })
    .then(userData => {
       var user = userData[0].dataValues
-
       if(user && user.facebook_id === userID){
+        req.session = { user: { id: userID } };
         res.send({ statusCode: 200 });
       }
    })

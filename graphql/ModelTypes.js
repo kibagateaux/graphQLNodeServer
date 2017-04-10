@@ -69,10 +69,9 @@ const {nodeInterface, nodeField} = nodeDefinitions(
 const UserType = new GraphQLInterfaceType({
   name: "UserTypeInterface",
   description: "Interface for all users",
-  interfaces: [nodeInterface],
   fields: () => {
     return {
-      id: globalIdField('User'),
+      id: { type: GraphQLInt },
       username: { type: GraphQLString },
       name: { type: GraphQLString },
       email: { type: GraphQLString },
@@ -90,13 +89,17 @@ const UserType = new GraphQLInterfaceType({
 const InfluencerType = new GraphQLObjectType({
   name: "InfluencerType",
   description: "Influencer using our services",
-  interfaces: [UserType, nodeInterface],
+  interfaces: [UserType],
   fields: () => {
     return {
-      id: globalIdField('Influencer'),
+      id: { type: GraphQLInt },
       username: { type: GraphQLString },
       name: { type: GraphQLString },
       email: { type: GraphQLString },
+      profileImage: {
+        type: GraphQLString,
+        resolve: (influ) => influ.profile_img
+      },
       facebookId: { type: GraphQLString },
       facebookAccessToken: { type: GraphQLString },
       twitterUsername: { type: GraphQLString },
@@ -105,7 +108,11 @@ const InfluencerType = new GraphQLObjectType({
       interests: { type: new GraphQLList(GraphQLString) },
       hasAgency: { type: GraphQLString },
       agencyName: { type: GraphQLString },
-      followers: { type: new GraphQLList(UserType) },
+      bio: { type: GraphQLString },
+      followers: {
+        type: new GraphQLList(UserType)
+        // resolve: (influ) => db.models.user.findAll({where: id: influ.followers })
+      },
       videos: {
         type: videoConnection,
         description: "Videos authored by Influencer",
@@ -176,16 +183,20 @@ const MediaType = new GraphQLObjectType({
       // type should be new GQL Enum
       mediaType: {
         type: GraphQLString,
-        resolve: media => media.media_type
+        resolve: m => m.media_type
+      },
+      sourceUrl: {
+        type: GraphQLString,
+        resolve: m => m.source_url
       },
       category: { type: new GraphQLList(GraphQLString) },
       author: {
         type: influencerConnection,
         description: "Author of the medium",
         args: connectionArgs,
-        resolve: (medium, args) =>
+        resolve: (m, args) =>
           db.models.user.findAll({
-            where: { id : medium.userId }
+            where: { id : m.userId }
           })
           .then(arr => connectionFromArray( arr, args ))
       }

@@ -26,12 +26,6 @@ app.use(Session({
 
 }));
 
-app.get("/fblogin", (req,res,next) => {
-  console.log("/fblogin get");
-  console.log(req)
-  res.send("You have searched for fb user");
-})
-
 app.post("/fblogin", (req,res,next) => {
    console.log("/fblogin");
 
@@ -51,8 +45,13 @@ app.post("/fblogin", (req,res,next) => {
    // if succesfully created api call to facebook for data
     // create session with new facebook data
    // req.session.user = fb data
+});
 
-})
+app.get("/insta", (req,res,next) => {
+  fetch('https://www.instagram.com/malikwormsby/?__a=1')
+  .then(data => data.json())
+  .then(json => res.send(json));
+});
 
 
 

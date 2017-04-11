@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 import {
   GraphQLObjectType,
   GraphQLInt,
@@ -65,6 +67,37 @@ const {nodeInterface, nodeField} = nodeDefinitions(
   }
 );
 
+const ImageType = new GraphQLObjectType({
+  name: "ImageType",
+  description: "Images of users",
+  fields: () => ({
+    sourceUrl: { type: GraphQLString },
+    likes: { type: GraphQLInt },
+    alt: { type: GraphQLString },
+  })
+});
+
+
+// Un poco complicated, cannot return JS object in GQL
+// must destructure entire response from each s.media API
+
+// const InstagramType = new GraphQLObjectType({
+//   name: "InstagramType",
+//   description: "Instagram Social Media",
+//   fields: () => ({
+//     images: {
+//       type: new GraphQLList(ImageType),
+//       resolve: (profile) =>
+//         profile.data.user.media.nodes.map(x => ({
+//           sourceUrl:x.display_src,
+//           likes:x.likes.count,
+//           alt:x.caption,
+//         }))
+//     },
+//     profile: { type: }
+
+//   })
+// })
 
 const UserType = new GraphQLInterfaceType({
   name: "UserTypeInterface",
@@ -92,6 +125,7 @@ const InfluencerType = new GraphQLObjectType({
   interfaces: [UserType],
   fields: () => {
     return {
+      // Basic user information
       id: { type: GraphQLInt },
       username: { type: GraphQLString },
       name: { type: GraphQLString },
@@ -102,9 +136,6 @@ const InfluencerType = new GraphQLObjectType({
       },
       facebookId: { type: GraphQLString },
       facebookAccessToken: { type: GraphQLString },
-      twitterUsername: { type: GraphQLString },
-      instagramUsername: { type: GraphQLString },
-      youtubeUsername: { type: GraphQLString },
       interests: { type: new GraphQLList(GraphQLString) },
       hasAgency: { type: GraphQLString },
       agencyName: { type: GraphQLString },
@@ -113,6 +144,30 @@ const InfluencerType = new GraphQLObjectType({
         type: new GraphQLList(UserType)
         // resolve: (influ) => db.models.user.findAll({where: id: influ.followers })
       },
+
+      // Social Media
+      twitterUsername: {
+        type: GraphQLString,
+        resolve: (influ) => influ. twitter_username
+      },
+      //see notes above at InstagramType
+      // instagram: {
+      //   type: InstagramType,
+      //   resolve: (influ) =>
+      //     fetch(
+      //       `https://www.instagram.com/
+      //       ${influ.instagramUsername}/?__a=1`
+      //     ).then(res => res).catch(err => console.log(err))
+      // },
+      instagramUsername: {
+        type: GraphQLString,
+        resolve: (influ) => influ. instagram_username
+      },
+      youtubeUsername: {
+        type: GraphQLString,
+        resolve: (influ) => influ. youtube_username
+      },
+
       videos: {
         type: videoConnection,
         description: "Videos authored by Influencer",

@@ -8,6 +8,8 @@ import fetch from 'node-fetch';
 
 import schema from './graphql';
 import { User } from './db';
+import AuthService, { oauth2Client } from './lib/utils/AuthService';
+
 
 const app = Express();
 
@@ -74,3 +76,31 @@ app.get('/logout', (req, res, next) => {
         res.redirect('/');
     });
 });
+
+
+app.get("/auth/google/callback", (req,res,next) => {
+ console.log("google auth cb");
+  const code = req.query.code;
+  const cb = (res) => {
+    console.log("Google Auth response", res);
+  }
+
+  oauth2Client.getToken(code, function (err, tokens) {
+    if (err) {
+      return cb(err);
+    }
+
+    // set tokens to the client
+    // TODO: tokens should be set by OAuth2 client.
+    oauth2Client.setCredentials(tokens);
+    cb(code);
+    res.redirect("http://localhost:3000")
+  });
+
+});
+
+
+
+
+
+

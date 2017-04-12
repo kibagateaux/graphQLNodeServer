@@ -11,14 +11,6 @@ import {
   GraphQLEnumType,
 } from 'graphql';
 
-import {
-  connectionArgs,
-  connectionDefinitions,
-  connectionFromArray,
-  fromGlobalId,
-  globalIdField,
-  nodeDefinitions,
-} from 'graphql-relay';
 
 //import PageInfoType from relay
 // https://github.com/graphql/graphql-relay-js/blob/master/src/connection/connectiontypes.js
@@ -28,76 +20,20 @@ import db, { User, Video, Media } from '../db';
 
 
 const resolveType = (data) => {
-  if(data.instagramUsername) {
-    return InfluencerType;
-  }
-  if(data.username){
-    return InfluencerType;
+   console.log("resolveType");
+    console.log(data);
+
+  if(data.instagramUsername) return InfluencerType;
+
+  if(data.username) return UserType;
+
+  if(data.mediaType) {
+    return data.mediaType === "video"? VideoType : ImageType
   }
 };
 
-const {nodeInterface, nodeField} = nodeDefinitions(
-  (globalId) => {
-    var {type, id} = fromGlobalId(globalId);
-    console.log(type);
-    if (type === 'User') {
-      return db.models.user.findById(id)
-    } else if (type === 'Video') {
-       return db.models.video.findById(id)
-    }
-    else if (type === 'Influencer') {
-      return db.models.user.findById(id)
-    }else {
-      return null;
-    }
-  },
-  (obj) => {
-     console.log("nodeDefinitions");
-      console.log(obj);
-       console.log(obj.is_influencer);
-    switch(Object.getPrototypeOf(obj).Model){
-      case User:
-        if(obj.is_influencer) return InfluencerType
-        return UserType;
-      case Video:
-        return VideoType;
-      default:
-        return null;
-    }
-  }
-);
 
-const ImageType = new GraphQLObjectType({
-  name: "ImageType",
-  description: "Images of users",
-  fields: () => ({
-    sourceUrl: { type: GraphQLString },
-    likes: { type: GraphQLInt },
-    alt: { type: GraphQLString },
-  })
-});
-
-
-// Un poco complicated, cannot return JS object in GQL
-// must destructure entire response from each s.media API
-
-// const InstagramType = new GraphQLObjectType({
-//   name: "InstagramType",
-//   description: "Instagram Social Media",
-//   fields: () => ({
-//     images: {
-//       type: new GraphQLList(ImageType),
-//       resolve: (profile) =>
-//         profile.data.user.media.nodes.map(x => ({
-//           sourceUrl:x.display_src,
-//           likes:x.likes.count,
-//           alt:x.caption,
-//         }))
-//     },
-//     profile: { type: }
-
-//   })
-// })
+// Interfaces
 
 const UserType = new GraphQLInterfaceType({
   name: "UserTypeInterface",
@@ -117,7 +53,6 @@ const UserType = new GraphQLInterfaceType({
   },
   resolveType: resolveType
 });
-
 
 const InfluencerType = new GraphQLObjectType({
   name: "InfluencerType",
@@ -140,17 +75,16 @@ const InfluencerType = new GraphQLObjectType({
       hasAgency: { type: GraphQLString },
       agencyName: { type: GraphQLString },
       bio: { type: GraphQLString },
-      followers: {
-        type: new GraphQLList(UserType)
-        // resolve: (influ) => db.models.user.findAll({where: id: influ.followers })
-      },
+      // followers: {
+      //   type: new GraphQLList(UserType)
+      //   // resolve: (influ) => db.models.user.findAll({where: id: influ.followers })
+      // },
 
       // Social Media
       twitterUsername: {
         type: GraphQLString,
-        resolve: (influ) => influ. twitter_username
+        resolve: (influ) => influ.twitter_username
       },
-      //see notes above at InstagramType
       // instagram: {
       //   type: InstagramType,
       //   resolve: (influ) =>
@@ -169,105 +103,134 @@ const InfluencerType = new GraphQLObjectType({
       },
 
       videos: {
-        type: videoConnection,
+        type: VideoType,
         description: "Videos authored by Influencer",
-        args: connectionArgs,
         resolve: (user, args) =>
-          user.getVideos().then(arr =>
-            connectionFromArray( arr, args )
-          )
+          user.getVideos()
       },
       media: {
-        type: mediaConnection,
+        type: MediaType,
         description: "Media authored by Influencer",
-        args: connectionArgs,
         resolve: (user, args) =>
           user.getMedia()
-           .then(arr => connectionFromArray( arr, args ) )
       }
     }
   }
 });
 
+
+// Visual Media
+const MediaType = new GraphQLInterfaceType({
+  name: "MediaType",
+  description: "Media created by Influencers",
+  fields: () => ({
+      id: { type: GraphQLInt },
+      caption: { type: GraphQLString },
+      // type should be new GQL Enum
+      mediaType: { type: GraphQLString },
+      sourceUrl: { type: GraphQLString },
+      tags: { type: new GraphQLList(GraphQLString) },
+      author: { type: InfluencerType }
+   }),
+  resolveType: resolveType
+});
+
+
 const VideoType = new GraphQLObjectType({
   name: "VideoType",
   description: "Videos created by Influencers",
-  interfaces: [nodeInterface],
-  fields: () => {
-    return {
-      id: globalIdField('Video'),
-      title: { type: GraphQLString },
-      category: { type: new GraphQLList(GraphQLString) },
+  interfaces: [MediaType],
+  fields: () => ({
+      id: { type: GraphQLInt },
+      caption: { type: GraphQLString },
+      mediaType: {
+        type: GraphQLString,
+        description: "Whether it is video or image",
+        resolve: v => v.media_type
+      },
+      sourceUrl: {
+        type: GraphQLString,
+        resolve: v => v.source_url
+      },
+      tags: { type: new GraphQLList(GraphQLString) },
       author: {
-        type: influencerConnection,
-        // type: InfluencerType,
+        type: InfluencerType,
         description: "Author of the video",
-        args: connectionArgs,
         resolve: (video, args) =>
           db.models.user.findAll({
             where: { id : video.userId }
           })
-          .then(arr => connectionFromArray( arr, args ))
       }
-   }
-  }
+   })
 });
 
-// MediaTypeEnum  example
-// var MediaTypeEnum = new GraphQLEnumType({
-//   name: 'RGB',
-//   values: {
-//     RED: { value: 0 },
-//     GREEN: { value: 1 },
-//     BLUE: { value: 2 }
-//   }
-// });
-
-// Should Media be an interface for Videos / Pictures / etc. ?
-// |______|______|
-// | Pros | Cons |
-// | One DB Model |
-const MediaType = new GraphQLObjectType({
-  name: "MediaType",
-  description: "Media created by Influencers",
-  interfaces: [nodeInterface],
-  fields: () => {
-    return {
-      id: globalIdField('Media'),
+const ImageType = new GraphQLObjectType({
+  name: "ImageType",
+  description: "Images of users",
+  fields: () => ({
+      id: { type: GraphQLInt },
       caption: { type: GraphQLString },
-      // type should be new GQL Enum
       mediaType: {
         type: GraphQLString,
-        resolve: m => m.media_type
+        description: "Whether it is video or image",
+        resolve: i => i.media_type
       },
       sourceUrl: {
         type: GraphQLString,
-        resolve: m => m.source_url
+        resolve: i => i.source_url
       },
-      category: { type: new GraphQLList(GraphQLString) },
+      tags: { type: new GraphQLList(GraphQLString) },
       author: {
-        type: influencerConnection,
-        description: "Author of the medium",
-        args: connectionArgs,
-        resolve: (m, args) =>
+        type: InfluencerType,
+        description: "Author of the Image",
+        resolve: (i, args) =>
           db.models.user.findAll({
-            where: { id : m.userId }
+            where: { id : i.userId }
           })
-          .then(arr => connectionFromArray( arr, args ))
       }
-   }
-  }
+   })
 });
 
-
-const {connectionType: influencerConnection} =
-  connectionDefinitions({name: 'Influencer', nodeType: InfluencerType});
-
-const {connectionType: videoConnection} =
-  connectionDefinitions({name: 'Video', nodeType: VideoType});
-
-const {connectionType: mediaConnection} =
-  connectionDefinitions({name: 'Media', nodeType: MediaType});
+// Social Media
+// Un poco complicated, cannot return JS object in GQL
+// must destructure entire user profile
 
 
-export { VideoType, MediaType, UserType, InfluencerType, nodeField }
+// const YoutubeChannelType = new GraphQLObjectType({
+
+
+
+// })
+
+// const YoutubePlaylistType = new GraphQLObjectType({
+
+
+
+// })
+
+// const  YoutubeVideoType = new GraphQLObjectType({
+
+
+
+// })
+
+// const InstagramType = new GraphQLObjectType({
+//   name: "InstagramType",
+//   description: "Instagram Social Media",
+//   fields: () => ({
+//     images: {
+//       type: new GraphQLList(ImageType),
+//       resolve: (profile) =>
+//         profile.data.user.media.nodes.map(x => ({
+//           sourceUrl:x.display_src,
+//           likes:x.likes.count,
+//           alt:x.caption,
+//         }))
+//     },
+//     profile: { type: }
+
+//   })
+// })
+
+
+export { VideoType, MediaType, UserType, InfluencerType }

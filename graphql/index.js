@@ -8,8 +8,8 @@ import {
   GraphQLNonNull,
   printSchema
 } from 'graphql';
-import { introspectionQuery } from 'graphql/utilities'
-// require('graphql/utilities').introspectionQuery
+
+import { introspectionQuery } from 'graphql/utilities';
 
 import {
   CreateNewUserMutation,
@@ -47,7 +47,6 @@ const QueryType = new GraphQLObjectType({
   description: "RootQuery function that returns data",
   fields: () => {
     return {
-      node: nodeField,
 // * mplementation: How to use authentication token *
 // * together with viewer *
 
@@ -69,10 +68,6 @@ const QueryType = new GraphQLObjectType({
   // The value of authToken is the authentication token
   // received after successful login mutation.
 
-      schema: {
-        type: GraphQLString,
-        resolve: () => introspectionQuery
-      },
       influencers: {
         type: new GraphQLList(InfluencerType),
         args: {
@@ -80,15 +75,12 @@ const QueryType = new GraphQLObjectType({
           username: { type: GraphQLString }
         },
         resolve: (parent, args) => {
-          console.log("influencers query resolve");
-           console.log(args);
           // Logic to filter for influencers
           args.is_influencer = true
           var influencer = db
             .models.user
             .findAll({ where: args })
-            .then(res => res).catch(err => err);
-          console.log(influencer);
+            .then(res => res).catch(err => console.log(err));
           return influencer
         }
       },
@@ -120,5 +112,5 @@ const QueryType = new GraphQLObjectType({
 
 export default new GraphQLSchema({
   query: QueryType,
-  mutation: MutationType
+  // mutation: MutationType
 })

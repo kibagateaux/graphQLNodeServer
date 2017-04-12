@@ -1,63 +1,41 @@
-import { mutationWithClientMutationId, fromGlobalId } from 'graphql-relay';
-
 import {
   GraphQLNonNull,
   GraphQLString,
   GraphQLList,
   GraphQLInt,
-  GraphQLBoolean
+  GraphQLBoolean,
+  GraphQLObjectType
 } from 'graphql';
 import db, { User } from '../db';
 
 import { InfluencerType, UserType, VideoType } from './ModelTypes';
 
+// var MutationType = new GraphQLObjectType({
+//   name: 'GraphQL Mutations',
+//   description: 'These are the things we can change',
+//   fields: () => ({
+//     createArticle: {
+//       type: ArticleType,
+//       description: 'Create a new article',
+//       args: {
+//         article: { type: ArticleInputType }
+//       },
+//       resolve: (value, { article }) => {
+//         return ArticleServices.createArticle(article);
+//       }
+//     }
+//   }),
+// });
 
-const CreateNewUserMutation = mutationWithClientMutationId({
+const CreateNewUserMutation = new GraphQLObjectType({
   name: 'CreateNewUserMutation',
-  inputFields: {
-    username: { type: new GraphQLNonNull(GraphQLString) },
-    name: { type: new GraphQLNonNull(GraphQLString) },
-    email: { type: new GraphQLNonNull(GraphQLString) },
+  field: UserType,
+  args: {
+    email: { type: GraphQLString },
+    password: { type: GraphQLString },
+    name: { type: GraphQLString }
   },
-  outputFields: {
-    user: {
-      type: InfluencerType,
-      resolve: user => user,
-    },
-    name: {
-      type: GraphQLString,
-      resolve: ({name}) => name
-    },
-    username: {
-      type: GraphQLString,
-      resolve: ({username}) => username
-    },
-    email: {
-      type: GraphQLString,
-      resolve: ({email}) => email
-    },
-    twitterUsername: {
-      type: GraphQLString,
-      resolve: ({twitterUsername}) => twitterUsername
-    },
-    youtubeUsername: {
-      type: GraphQLString,
-      resolve: ({youtubeUsername}) => youtubeUsername
-    },
-    instagramUsername: {
-      type: GraphQLString,
-      resolve: ({instagramUsername}) => instagramUsername
-    },
-    age: {
-      type: GraphQLInt,
-      resolve: ({age}) => age
-    },
-    interests: {
-      type: new GraphQLList(GraphQLString),
-      resolve: ({interests}) => interests
-    },
-  },
-  mutateAndGetPayload: (data) => {
+  resolve: (data, props) => {
     // Q: how to give it an Influencer or User type?
     // in db there is no differentiaton
     // A: in GraphQL based on db column "is_influencer"
@@ -65,13 +43,13 @@ const CreateNewUserMutation = mutationWithClientMutationId({
     const user  = User.create({
       name, username, email
     })._boundTo.dataValues
-
+     console.log("CreateNewUserMutation", user);
     return user ;
   },
 });
 
 // mutation hasApplied - adds s.media usernames, has_applied = true
-const applyForInfluencerMutation = new mutationWithClientMutationId({
+const applyForInfluencerMutation = new GraphQLObjectType({
   name: "applyForInfluencerMutation",
   description: "Changes viewer's status to 'Has Applied' and accepts s.media usernames",
   inputFields: {
@@ -92,7 +70,7 @@ const applyForInfluencerMutation = new mutationWithClientMutationId({
       resolve: ({has_applied}) => has_applied
     }
   },
-  mutateAndGetPayload: (data) => {
+  resolve: (data) => {
     data.has_applied = true;
     const user = User.findById(id)
       .then(user => user.set(data))
@@ -103,7 +81,7 @@ const applyForInfluencerMutation = new mutationWithClientMutationId({
 
 });
 
-const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
+const applicantHasBeenAcceptedMutation = new GraphQLObjectType({
   name: "applicantHasBeenAcceptedMutation",
   description: "Applicant has been accpeted and is formally an 'influencer' ",
   inputFields: {
@@ -113,7 +91,7 @@ const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
     user: { type: UserType, resolve: user => user },
     isInfluencer: { type: GraphQLBoolean, resolve: user => user.is_influencer }
   },
-  mutateAndGetPayload: (data) => {
+  resolve: (data) => {
     console.log("applicantHasBeenAcceptedMutation data");
     console.log(data);
     let { id } = data;
@@ -124,7 +102,7 @@ const applicantHasBeenAcceptedMutation = new mutationWithClientMutationId({
   }
 })
 
-const updateUserDataMutation = new mutationWithClientMutationId({
+const updateUserDataMutation = new GraphQLObjectType({
   name: "updateUserDataMutation",
   description: "Updates user data in database for given fields",
   inputFields:{
@@ -174,7 +152,7 @@ const updateUserDataMutation = new mutationWithClientMutationId({
       resolve: ({ interests }) => interests
     }
   },
-  mutateAndGetPayload: (data) => {
+  resolve: (data) => {
     console.log("applicantHasBeenAcceptedMutation data");
     console.log(data);
     let { id } = data;

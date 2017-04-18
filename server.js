@@ -8,10 +8,14 @@ import fetch from 'node-fetch';
 
 import schema from './graphql';
 import { User } from './db';
-import AuthService, { oauth2Client } from './lib/utils/AuthService';
+import AuthService, { oauth2Client, youtube } from './lib/utils/AuthService';
 
 
 const app = Express();
+
+app.listen(8080, () => {
+   console.log("App listening on port 8080");
+});
 
 
 app.use(bodyParser.json());
@@ -27,6 +31,14 @@ app.use(Session({
    cookie: { secure: false }
 
 }));
+
+app.use('/graphql', GraphHTTP({
+  schema: schema,
+  pretty: true,
+  graphiql: true
+}))
+
+
 
 app.post("/fblogin", (req,res,next) => {
    console.log("/fblogin");
@@ -56,17 +68,6 @@ app.get("/insta", (req,res,next) => {
 });
 
 
-
-app.use('/graphql', GraphHTTP({
-  schema: schema,
-  pretty: true,
-  graphiql: true
-}))
-
-app.listen(8080, () => {
-   console.log("App listening on port 8080");
-});
-
 app.get('/logout', (req, res, next) => {
     req.logout();
     req.session.save((err) => {
@@ -77,12 +78,34 @@ app.get('/logout', (req, res, next) => {
     });
 });
 
+// OAuth on client side i.e. current setup
+// https://developers.google.com/youtube/v3/guides/auth/client-side-web-apps
+
+// OAuth on server
+// https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
+
+app.get("/youtube", (req,res,next) => {
+   console.log("/youtube");
+    const channel = youtube.channels.list({
+      part: "contentDetails",
+      mine: true
+    }, (err, response) => {
+      if(err) { console.log("youtube API err", err); return; }
+       console.log("channel cb response");
+       console.log(response);
+        console.log(response.items);
+       res.send(response.items)
+    });
+
+});
 
 app.get("/auth/google/callback", (req,res,next) => {
- console.log("google auth cb");
+ console.log("google auth");
+
   const code = req.query.code;
-  const cb = (res) => {
-    console.log("Google Auth response", res);
+
+  const cb = (tokens) => {
+    console.log("Google Auth tokens", tokens);
   }
 
   oauth2Client.getToken(code, function (err, tokens) {
@@ -90,10 +113,9 @@ app.get("/auth/google/callback", (req,res,next) => {
       return cb(err);
     }
 
-    // set tokens to the client
-    // TODO: tokens should be set by OAuth2 client.
+    // sets tokens to the client
     oauth2Client.setCredentials(tokens);
-    cb(code);
+    cb(tokens);
     res.redirect("http://localhost:3000")
   });
 

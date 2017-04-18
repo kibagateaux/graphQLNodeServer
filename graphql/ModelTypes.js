@@ -18,10 +18,9 @@ import {
 import db, { User, Video, Media } from '../db';
 
 
-
 const resolveType = (data) => {
-   console.log("resolveType");
-    console.log(data);
+  console.log("resolveType");
+  console.log(data);
 
   if(data.instagramUsername) return InfluencerType;
 
@@ -33,7 +32,7 @@ const resolveType = (data) => {
 };
 
 
-// Interfaces
+// User Definitions
 
 const UserType = new GraphQLInterfaceType({
   name: "UserTypeInterface",
@@ -44,8 +43,8 @@ const UserType = new GraphQLInterfaceType({
       username: { type: GraphQLString },
       name: { type: GraphQLString },
       email: { type: GraphQLString },
-      facebookId: { type: GraphQLString },
-      facebookAccessToken: { type: GraphQLString },
+      facebook_id: { type: GraphQLString },
+      facebook_access_token: { type: GraphQLString },
       // these are custom interests pertaining to our product
       // for an exhaustive list use FB or Google user data
       interests: { type: new GraphQLList(GraphQLString) }
@@ -61,76 +60,69 @@ const InfluencerType = new GraphQLObjectType({
   fields: () => {
     return {
       // Basic user information
-      id: { type: GraphQLInt },
-      username: { type: GraphQLString },
-      name: { type: GraphQLString },
-      email: { type: GraphQLString },
-      profileImage: {
-        type: GraphQLString,
-        resolve: (influ) => influ.profile_img
-      },
-      facebookId: { type: GraphQLString },
-      facebookAccessToken: { type: GraphQLString },
-      interests: { type: new GraphQLList(GraphQLString) },
-      hasAgency: { type: GraphQLString },
-      agencyName: { type: GraphQLString },
-      bio: { type: GraphQLString },
+      id:           { type: GraphQLInt },
+      username:     { type: GraphQLString },
+      name:         { type: GraphQLString },
+      email:        { type: GraphQLString },
+      profile_img:  { type: GraphQLString },
+      facebook_id:  { type: GraphQLString },
+      facebook_access_token: { type: GraphQLString },
+      interests:    { type: new GraphQLList(GraphQLString) },
+      hasAgency:    { type: GraphQLString },
+      agencyName:   { type: GraphQLString },
+      bio:          { type: GraphQLString },
       // followers: {
       //   type: new GraphQLList(UserType)
       //   // resolve: (influ) => db.models.user.findAll({where: id: influ.followers })
       // },
 
       // Social Media
-      twitterUsername: {
-        type: GraphQLString,
-        resolve: (influ) => influ.twitter_username
+      twitter_username: { type: GraphQLString },
+      instagram: {
+        type: InstagramType,
+        resolve: (influ) => {
+          // this is proper search but needs API Auth
+          return fetch(
+            `https://www.instagram.com/${influ.dataValues.instagram_username}/media`
+          ).then(res => res).catch(err => console.log(err))
+        }
       },
-      // instagram: {
-      //   type: InstagramType,
-      //   resolve: (influ) =>
-      //     fetch(
-      //       `https://www.instagram.com/
-      //       ${influ.instagramUsername}/?__a=1`
-      //     ).then(res => res).catch(err => console.log(err))
-      // },
-      instagramUsername: {
-        type: GraphQLString,
-        resolve: (influ) => influ. instagram_username
-      },
-      youtubeUsername: {
-        type: GraphQLString,
-        resolve: (influ) => influ. youtube_username
-      },
+      // youtubeChannel: {
+      //   type: YoutubeChannelType,
+      //   description: "Youtube channel belonging to this influencer",
+        // resolve to /auth/google/ ?
+        // should not be necessary after first auth with refresh tokens
 
+        // So save channel id in their db and send in req to youtube api?
+        // resolve: ({dataValues}) => fetch()
+      // },
+      instagram_username: { type: GraphQLString },
+      youtube_username:   { type: GraphQLString },
       videos: {
-        type: VideoType,
+        type: new GraphQLList(VideoType),
         description: "Videos authored by Influencer",
-        resolve: (user, args) =>
-          user.getVideos()
-      },
-      media: {
-        type: MediaType,
-        description: "Media authored by Influencer",
-        resolve: (user, args) =>
-          user.getMedia()
+        resolve: (user, args) => user.getVideos()
       }
     }
   }
 });
 
 
-// Visual Media
+
+
+// Visual Media Definitions
+
 const MediaType = new GraphQLInterfaceType({
   name: "MediaType",
   description: "Media created by Influencers",
   fields: () => ({
-      id: { type: GraphQLInt },
-      caption: { type: GraphQLString },
+      id:           { type: GraphQLInt },
+      caption:      { type: GraphQLString },
       // type should be new GQL Enum
-      mediaType: { type: GraphQLString },
-      sourceUrl: { type: GraphQLString },
-      tags: { type: new GraphQLList(GraphQLString) },
-      author: { type: InfluencerType }
+      media_type:   { type: GraphQLString },
+      source_url:   { type: GraphQLString },
+      tags:         { type: new GraphQLList(GraphQLString) },
+      author:       { type: InfluencerType }
    }),
   resolveType: resolveType
 });
@@ -141,26 +133,22 @@ const VideoType = new GraphQLObjectType({
   description: "Videos created by Influencers",
   interfaces: [MediaType],
   fields: () => ({
-      id: { type: GraphQLInt },
-      caption: { type: GraphQLString },
-      mediaType: {
-        type: GraphQLString,
-        description: "Whether it is video or image",
-        resolve: v => v.media_type
-      },
-      sourceUrl: {
-        type: GraphQLString,
-        resolve: v => v.source_url
-      },
-      tags: { type: new GraphQLList(GraphQLString) },
-      author: {
-        type: InfluencerType,
-        description: "Author of the video",
-        resolve: (video, args) =>
-          db.models.user.findAll({
-            where: { id : video.userId }
-          })
-      }
+      id:          { type: GraphQLInt },
+      caption:     { type: GraphQLString },
+      media_type:  {
+                     type: GraphQLString,
+                     description: "Whether it is video or image"
+                   },
+      source_url:  { type: GraphQLString },
+      tags:        { type: new GraphQLList(GraphQLString) },
+      author:      {
+                     type: InfluencerType,
+                     description: "Author of the video",
+                     resolve: (video, args) =>
+                       db.models.user.findAll({
+                         where: { id : video.userId }
+                       })
+                   }
    })
 });
 
@@ -168,26 +156,25 @@ const ImageType = new GraphQLObjectType({
   name: "ImageType",
   description: "Images of users",
   fields: () => ({
-      id: { type: GraphQLInt },
-      caption: { type: GraphQLString },
-      mediaType: {
-        type: GraphQLString,
-        description: "Whether it is video or image",
-        resolve: i => i.media_type
-      },
-      sourceUrl: {
-        type: GraphQLString,
-        resolve: i => i.source_url
-      },
-      tags: { type: new GraphQLList(GraphQLString) },
-      author: {
-        type: InfluencerType,
-        description: "Author of the Image",
-        resolve: (i, args) =>
-          db.models.user.findAll({
-            where: { id : i.userId }
-          })
-      }
+      id:           { type: GraphQLInt },
+      caption:      { type: GraphQLString },
+      media_type:   {
+                      type: GraphQLString,
+                      description: "Whether it is video or image",
+                    },
+      source_url:   {
+                      type: GraphQLString,
+                      resolve: i => i.source_url
+                    },
+      tags:         { type: new GraphQLList(GraphQLString) },
+      author:       {
+                      type: InfluencerType,
+                      description: "Author of the Image",
+                      resolve: (i, args) =>
+                        db.models.user.findAll({
+                          where: { id : i.userId }
+                        })
+                    }
    })
 });
 
@@ -197,7 +184,11 @@ const ImageType = new GraphQLObjectType({
 
 
 // const YoutubeChannelType = new GraphQLObjectType({
-
+  // playists: {
+  //   type: new GraphQLList(YoutubePlaylistType),
+  //   resolve: () => youtube.playlists.list(channelID)
+  // },
+  // owner:
 
 
 // })
@@ -214,23 +205,39 @@ const ImageType = new GraphQLObjectType({
 
 // })
 
-// const InstagramType = new GraphQLObjectType({
-//   name: "InstagramType",
-//   description: "Instagram Social Media",
-//   fields: () => ({
-//     images: {
-//       type: new GraphQLList(ImageType),
-//       resolve: (profile) =>
-//         profile.data.user.media.nodes.map(x => ({
-//           sourceUrl:x.display_src,
-//           likes:x.likes.count,
-//           alt:x.caption,
-//         }))
-//     },
-//     profile: { type: }
-
-//   })
-// })
+// instagram is a dick and you NEED OAuth for any data even public
+// better focus on youtube
+const InstagramType = new GraphQLObjectType({
+  name: "InstagramType",
+  description: "Instagram Social Media",
+  fields: () => ({
+    profile_img:    {
+                      type: new GraphQLNonNull(GraphQLString),
+                      resolve: (user) => user.profile_pic_url_hd
+                    },
+    external_url:   { type: GraphQLString },
+    images:         {
+                      type: new GraphQLList(ImageType),
+                      resolve: (user) =>{
+                        return user.data.user.media.nodes.map(x => ({
+                          source_url: x.display_src,
+                          likes:      x.likes.count,
+                          caption:    x.caption,
+                        }))
+                      }
+                    },
+    bio:            {
+                      type: GraphQLString,
+                      resolve: ({biography}) => biography
+                    },
+    follower_count: {
+                      type: new GraphQLNonNull(GraphQLInt),
+                      resolve: ({followed_by}) => parseInt(followed_by.count)
+                    },
+    is_verified:    { type: new GraphQLNonNull(GraphQLBoolean) },
+    username:       { type: new GraphQLNonNull(GraphQLString) }
+  })
+})
 
 
 export { VideoType, MediaType, UserType, InfluencerType }

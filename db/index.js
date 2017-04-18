@@ -89,17 +89,21 @@ const User = Conn.define('user', {
 })
 
 const Video = Conn.define('video', {
-  title:{
+  caption:{
     type: Sequelize.STRING
   },
-  url: {
+  media_type:{
     type: Sequelize.STRING,
-    // allowNull: false
+    defaultValue: 'video',
+    allowNull: false
   },
-  type: {
-    type: Sequelize.STRING
+  tags: {
+    type: Sequelize.ARRAY(Sequelize.STRING)
+  },
+  source_url: {
+    type: Sequelize.STRING,
+    allowNull: false
   }
-
 });
 
 const Medium = Conn.define('medium', {
@@ -252,7 +256,7 @@ Conn.sync({force:true}).then(() => {
       instagram_username: fakeUsers[i].instagram_username,
       twitter_username: fakeUsers[i].twitter_username
     }).then(person => {
-      return person.createMedium({
+      return person.createVideo({
         media_type: 'video',
         caption: `Sample Video by ${person.username}`,
         source_url: "https://www.youtube.com/embed/f6ODPbpYOjs"

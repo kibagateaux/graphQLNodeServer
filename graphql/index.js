@@ -45,8 +45,7 @@ const MutationType = new GraphQLObjectType({
 const QueryType = new GraphQLObjectType({
   name: "Query",
   description: "RootQuery function that returns data",
-  fields: () => {
-    return {
+  fields: () => ({
 // * mplementation: How to use authentication token *
 // * together with viewer *
 
@@ -68,46 +67,41 @@ const QueryType = new GraphQLObjectType({
   // The value of authToken is the authentication token
   // received after successful login mutation.
 
-      influencers: {
-        type: new GraphQLList(InfluencerType),
-        args: {
-          id: { type: GraphQLInt },
-          username: { type: GraphQLString }
-        },
-        resolve: (parent, args) => {
-          // Logic to filter for influencers
-          args.is_influencer = true
-          var influencer = db
-            .models.user
-            .findAll({ where: args })
-            .then(res => res).catch(err => console.log(err));
-          return influencer
-        }
+    influencers: {
+      type: new GraphQLList(InfluencerType),
+      args: {
+        id: { type: GraphQLInt },
+        username: { type: GraphQLString }
       },
-      videos: {
-        type: new GraphQLList(VideoType),
-        args: {
-          id: { type: GraphQLInt },
-          userId: { type: GraphQLString },
-          title: { type: GraphQLString }
-        },
-        resolve: (parent, args) => {
-          // id = Number.parseInt(id);
-          return db.models.video.findAll({ where: args })
-        }
-      },
-      users: {
-        type: new GraphQLList(UserType),
-        args: {
-          id: { type: GraphQLInt },
-          username: { type: GraphQLString }
-        },
-        resolve: (parent, args) => {
-          return db.models.user.findAll({ where: args })
-        }
+      resolve: (parent, args) => {
+        args.is_influencer = true
+        return db.models.user.findAll({ where: args })
+          .then(res => res).catch(err => console.log(err));
       }
+    },
+    videos: {
+      type: new GraphQLList(VideoType),
+      args: {
+        id: { type: GraphQLInt },
+        userId: { type: GraphQLString },
+        title: { type: GraphQLString }
+      },
+      resolve: (parent, args) => {
+        args.media_type === "video";
+        return db.models.video.findAll({ where: args })
+      }
+    },
+    users: {
+      type: new GraphQLList(UserType),
+      args: {
+        id: { type: GraphQLInt },
+        username: { type: GraphQLString }
+      },
+      resolve: (parent, args) =>
+        db.models.user.findAll({ where: args })
+
     }
-  }
+  })
 })
 
 export default new GraphQLSchema({

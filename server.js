@@ -86,15 +86,25 @@ app.get('/logout', (req, res, next) => {
 
 app.get("/youtube", (req,res,next) => {
    console.log("/youtube");
+
     const channel = youtube.channels.list({
       part: "contentDetails",
+      //instead of mine should be forUsername with param username
       mine: true
     }, (err, response) => {
-      if(err) { console.log("youtube API err", err); return; }
+      if(err) { console.log("youtube channel API err", err); return; }
        console.log("channel cb response");
-       console.log(response);
         console.log(response.items);
-       res.send(response.items)
+        const channelSections = youtube.channelSections.list({
+          part: 'contentDetails',
+          channelId: response.items[0].id
+        }, (err, response) => {
+          if(err){  console.log("youtube channelSection API err", err); return; }
+           console.log("channelSections cb");
+            console.log(response);
+            res.send(response.items)
+
+        })
     });
 
 });

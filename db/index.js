@@ -137,7 +137,7 @@ const fakeUsers = [
     name: "KSIO",
     email:Faker.internet.email(),
     profile_img: "https://scontent-lga3-1.cdninstagram.com/t51.2885-15/e35/17076342_280499869046646_5497105290413211648_n.jpg",
-    youtube_username: "KSIOlajidebt",
+    youtube_username: "KSI",
     instagram_username: "ksi",
     twitter_username: "KSIOlajidebt"
   },
@@ -236,7 +236,7 @@ const fakeUsers = [
     name: "KSIO",
     email:Faker.internet.email(),
     profile_img: "https://scontent-lga3-1.cdninstagram.com/t51.2885-15/e35/17076342_280499869046646_5497105290413211648_n.jpg",
-    youtube_username: "KSIOlajidebt",
+    youtube_username: "KSI",
     instagram_username: "ksi",
     twitter_username: "KSIOlajidebt"
   }

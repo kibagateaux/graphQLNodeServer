@@ -16,7 +16,9 @@ import {
 // https://github.com/graphql/graphql-relay-js/blob/master/src/connection/connectiontypes.js
 
 import db, { User, Video, Media } from '../db';
-
+// import { InstagramType } from './SocialMediaModels';
+import YoutubeChannelType from './Models/Youtube';
+import { youtube } from '../lib/utils/AuthService';
 
 const resolveType = (data) => {
   console.log("resolveType");
@@ -98,6 +100,49 @@ const InfluencerType = new GraphQLObjectType({
       // },
       instagram_username: { type: GraphQLString },
       youtube_username:   { type: GraphQLString },
+      youtube: {
+        type: YoutubeChannelType,
+        resolve: (influ) => {
+          let channel;
+
+          let cb = function(err, res){
+             console.log("pre sres", res);
+            channel = res;
+             console.log("post chan", channel);
+            return channel;
+          };
+
+          let channelRequest = () => youtube.channels.list(
+            {
+              part: 'contentDetails',
+              forUsername: influ.youtube_username
+            }, cb
+          );
+
+          setTimeout(() =>  console.log("timeout channel", channel), 2000);
+
+          let promise = new Promise(async (resolve, reject) => {
+            resolve(await channelRequest);
+            // reject( console.log("Your Youtube channelRequest failed") ) });
+          });
+
+          // wrap cb in promise and set channel in .then
+          // or return the whole promise which is suggested for GQL
+          const data = channel? channel : promise.then(res => {
+            return channel
+          }).catch(err =>  console.log("err", err))
+
+           console.log("data before return", data.then(res => res));
+
+           //return data.items[0] which is actual channel data
+          return async () => {
+            const d = await data.then(res => res);
+             console.log("awaited d", d);
+             return d
+          };
+
+        }
+      },
       videos: {
         type: new GraphQLList(VideoType),
         description: "Videos authored by Influencer",
@@ -237,7 +282,7 @@ const InstagramType = new GraphQLObjectType({
     is_verified:    { type: new GraphQLNonNull(GraphQLBoolean) },
     username:       { type: new GraphQLNonNull(GraphQLString) }
   })
-})
+});
 
 
 export { VideoType, MediaType, UserType, InfluencerType }
